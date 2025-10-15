@@ -79,7 +79,7 @@ export function useCategory(
       }
 
       // Update store with new subcategories
-      setStoredCategory(selectedCategoryId, newSelectedSubcategories);
+      setStoredCategory(selectedCategoryId || "", newSelectedSubcategories);
 
       // Build the category string
       const categoryString = buildCategoryString(
