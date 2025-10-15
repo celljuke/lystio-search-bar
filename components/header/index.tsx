@@ -5,10 +5,11 @@ import { useSearchStore } from "../../modules/search/store";
 import { Globe, User } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy">("rent");
-  const { isAnyPopoverOpen, exitSearchMode } = useSearchStore();
+  const { isAnyPopoverOpen, exitSearchMode, isInSearchMode } = useSearchStore();
 
   return (
     <>
@@ -46,9 +47,11 @@ export function Header() {
 
             {/* Search Area - Rent/Buy toggle above, Search Bar below */}
             <div
-              className={`flex flex-1 max-w-2xl mx-8 flex-col items-center transition-all duration-200 ${
-                isAnyPopoverOpen() ? "gap-3 justify-center" : "justify-center"
-              }`}
+              className={cn(
+                "flex flex-1 mx-8 flex-col items-center transition-all duration-200",
+                isAnyPopoverOpen() ? "gap-3 justify-center" : "justify-center",
+                isInSearchMode ? "max-w-4xl" : "max-w-2xl"
+              )}
             >
               {/* Rent/Buy Toggle - Only visible in search mode */}
               {isAnyPopoverOpen() && (

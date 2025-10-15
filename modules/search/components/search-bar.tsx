@@ -54,20 +54,26 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
   return (
     <div className={cn("relative w-full max-w-4xl mx-auto", className)}>
       {/* Desktop Layout */}
-      <div className="hidden md:block" ref={searchBarRef}>
-        <div className="relative bg-white rounded-full shadow-lg border border-gray-200 transition-shadow duration-200 flex items-center h-14">
+      <div className="hidden md:block w-full" ref={searchBarRef}>
+        <div
+          className={`relative bg-white rounded-full shadow-lg border border-gray-200 transition-all duration-200 flex items-center ${
+            isInSearchMode ? "h-16" : "h-14"
+          }`}
+        >
           {/* Location Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center rounded-l-full hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
+              className={`flex h-full w-full items-center rounded-l-full hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors ${
+                isInSearchMode ? "justify-start" : "justify-center"
+              }`}
               type="button"
               onClick={() => toggle("location")}
             >
               {!isInSearchMode ? (
-                // Normal state - only title
+                // Normal state - only title centered
                 <span className="text-sm font-medium text-black">Location</span>
               ) : (
-                // Search mode - title + description
+                // Search mode - title + description left-aligned
                 <div className="flex flex-col items-start gap-0.5 w-full">
                   <span className="text-xs font-medium text-black">
                     Location
@@ -153,7 +159,9 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           {/* Category Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
+              className={`flex h-full w-full items-center hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors ${
+                isInSearchMode ? "justify-start" : "justify-center"
+              }`}
               type="button"
               onClick={() => toggle("category")}
             >
@@ -203,18 +211,20 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           {/* Price Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center hover:bg-gray-50 px-6 pr-16 cursor-pointer bg-transparent border-none transition-colors rounded-r-full"
+              className={`flex h-full w-full items-center hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors rounded-r-full ${
+                isInSearchMode ? "justify-start pr-24" : "justify-center pr-16"
+              }`}
               type="button"
               onClick={() => toggle("price")}
             >
               {!isInSearchMode ? (
-                // Normal state - only title
+                // Normal state - only title centered
                 <span className="text-sm font-medium text-black">Price</span>
               ) : (
-                // Search mode - title + description
+                // Search mode - title + description left-aligned
                 <div className="flex flex-col items-start gap-0.5 w-full">
                   <span className="text-xs font-medium text-black">Price</span>
-                  <span className="text-sm font-normal text-gray-400">
+                  <span className="text-sm font-normal text-gray-400 truncate">
                     {filters.priceRange || "Any Price"}
                   </span>
                 </div>
@@ -256,13 +266,25 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           </div>
 
           {/* Search Button - Positioned absolutely on the right */}
-          <div className="absolute right-1 top-1/2 -translate-y-1/2">
-            <Button
-              onClick={handleSearch}
-              className="h-12 w-12 rounded-full bg-[#A540F3] hover:bg-[#9338D1] shadow-md"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </Button>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+            {!isInSearchMode ? (
+              // Normal state - Icon only
+              <Button
+                onClick={handleSearch}
+                className="h-12 w-12 rounded-full bg-[#A540F3] hover:bg-[#9338D1] shadow-md"
+              >
+                <Search className="w-5 h-5 text-white" />
+              </Button>
+            ) : (
+              // Search mode - Text with icon
+              <Button
+                onClick={handleSearch}
+                className="h-12 px-8 rounded-full bg-[#A540F3] hover:bg-[#9338D1] shadow-md text-white font-medium"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Search
+              </Button>
+            )}
           </div>
         </div>
       </div>
