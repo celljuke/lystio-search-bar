@@ -79,8 +79,7 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
                     Location
                   </span>
                   <span className="text-sm font-normal text-gray-400 truncate">
-                    {filters.location ||
-                      "Find a location, street, region or zip"}
+                    {filters.location || "City District, Street, Postcode"}
                   </span>
                 </div>
               )}

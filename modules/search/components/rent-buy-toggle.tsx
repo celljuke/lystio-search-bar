@@ -1,11 +1,10 @@
 "use client";
 
-import { Toggle } from "../../../components/ui/toggle";
 import { cn } from "../../../lib/utils";
 
 interface RentBuyToggleProps {
-  value: "rent" | "buy";
-  onChange: (value: "rent" | "buy") => void;
+  value: "rent" | "buy" | "ai";
+  onChange: (value: "rent" | "buy" | "ai") => void;
   className?: string;
 }
 
@@ -14,37 +13,73 @@ export function RentBuyToggle({
   onChange,
   className,
 }: RentBuyToggleProps) {
+  const getSliderTransform = () => {
+    switch (value) {
+      case "rent":
+        return "translateX(0)";
+      case "buy":
+        return "translateX(100%)";
+      case "ai":
+        return "translateX(200%)";
+      default:
+        return "translateX(0)";
+    }
+  };
+
   return (
-    <div className={cn("flex items-center", className)}>
-      <div className="relative flex h-11 w-44 items-center rounded-full border border-[#E5E3F8] bg-gray-50 p-1">
-        {/* Sliding background */}
-        <div
-          className={cn(
-            "absolute rounded-full border border-white bg-white shadow-lg transition-all duration-200",
-            value === "rent" ? "left-1" : "left-[calc(100%-83px-4px)]"
-          )}
-          style={{ width: "83px", height: "calc(100% - 8px)" }}
-        />
+    <div className={cn("flex items-center justify-center", className)}>
+      <div className="relative inline-flex h-12 items-center rounded-full border border-[#EEE7FF] bg-[#F7F7FD] p-1">
+        {/* Sliding background - uses grid for equal spacing */}
+        <div className="absolute inset-1 grid grid-cols-3 gap-0">
+          <div
+            className="rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
+            style={{ transform: getSliderTransform() }}
+          />
+        </div>
 
-        {/* Rent Button */}
-        <Toggle
-          pressed={value === "rent"}
-          onPressedChange={() => onChange("rent")}
-          className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full px-2 transition-colors"
-          aria-pressed={value === "rent"}
-        >
-          <span className="text-base font-normal text-black">Rent</span>
-        </Toggle>
+        {/* Buttons container - also uses grid for equal spacing */}
+        <div className="relative z-10 grid grid-cols-3 gap-0">
+          {/* Rent Button */}
+          <button
+            onClick={() => onChange("rent")}
+            className={cn(
+              "flex h-10 items-center justify-center rounded-full px-3 transition-colors",
+              value === "rent"
+                ? "text-black font-medium"
+                : "text-gray-600 font-medium"
+            )}
+          >
+            <span className="text-base whitespace-nowrap">Rent</span>
+          </button>
 
-        {/* Buy Button */}
-        <Toggle
-          pressed={value === "buy"}
-          onPressedChange={() => onChange("buy")}
-          className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full px-2 transition-colors"
-          aria-pressed={value === "buy"}
-        >
-          <span className="text-base font-normal text-black">Buy</span>
-        </Toggle>
+          {/* Buy Button */}
+          <button
+            onClick={() => onChange("buy")}
+            className={cn(
+              "flex h-10 items-center justify-center rounded-full px-3 transition-colors",
+              value === "buy"
+                ? "text-black font-medium"
+                : "text-gray-600 font-medium"
+            )}
+          >
+            <span className="text-base whitespace-nowrap">Buy</span>
+          </button>
+
+          {/* Lystio AI Button */}
+          <button
+            onClick={() => onChange("ai")}
+            className={cn(
+              "flex h-10 items-center justify-center rounded-full px-3 transition-colors",
+              value === "ai"
+                ? "text-black font-medium"
+                : "text-gray-600 font-medium"
+            )}
+          >
+            <span className="text-base whitespace-nowrap">
+              Lystio <span className="text-[#A540F3]">AI</span>
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

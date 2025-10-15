@@ -8,7 +8,9 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function Header() {
-  const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy">("rent");
+  const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy" | "ai">(
+    "rent"
+  );
   const { isAnyPopoverOpen, exitSearchMode, isInSearchMode } = useSearchStore();
 
   return (
