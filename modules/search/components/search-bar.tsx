@@ -49,6 +49,8 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
     };
   }, [openPopover, closeDropdown]);
 
+  const { isInSearchMode } = useSearchStore();
+
   return (
     <div className={cn("relative w-full max-w-4xl mx-auto", className)}>
       {/* Desktop Layout */}
@@ -57,13 +59,25 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           {/* Location Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center justify-start rounded-l-full hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
+              className="flex h-full w-full items-center rounded-l-full hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
               type="button"
               onClick={() => toggle("location")}
             >
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-normal text-black">Location</span>
-              </div>
+              {!isInSearchMode ? (
+                // Normal state - only title
+                <span className="text-sm font-medium text-black">Location</span>
+              ) : (
+                // Search mode - title + description
+                <div className="flex flex-col items-start gap-0.5 w-full">
+                  <span className="text-xs font-medium text-black">
+                    Location
+                  </span>
+                  <span className="text-sm font-normal text-gray-400 truncate">
+                    {filters.location ||
+                      "Find a location, street, region or zip"}
+                  </span>
+                </div>
+              )}
             </button>
 
             {isOpen("location") && (
@@ -139,13 +153,24 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           {/* Category Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center justify-start hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
+              className="flex h-full w-full items-center hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors"
               type="button"
               onClick={() => toggle("category")}
             >
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-normal text-black">Category</span>
-              </div>
+              {!isInSearchMode ? (
+                // Normal state - only title
+                <span className="text-sm font-medium text-black">Category</span>
+              ) : (
+                // Search mode - title + description
+                <div className="flex flex-col items-start gap-0.5 w-full">
+                  <span className="text-xs font-medium text-black">
+                    Category
+                  </span>
+                  <span className="text-sm font-normal text-black">
+                    {filters.propertyType || "Apartments"}
+                  </span>
+                </div>
+              )}
             </button>
 
             {isOpen("category") && (
@@ -178,18 +203,22 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
           {/* Price Button */}
           <div className="relative flex-1 h-full">
             <button
-              className="flex h-full w-full items-center justify-start hover:bg-gray-50 px-6 pr-16 cursor-pointer bg-transparent border-none transition-colors rounded-r-full"
+              className="flex h-full w-full items-center hover:bg-gray-50 px-6 pr-16 cursor-pointer bg-transparent border-none transition-colors rounded-r-full"
               type="button"
               onClick={() => toggle("price")}
             >
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-normal text-black">Price</span>
-                {filters.priceRange && (
-                  <p className="text-base text-gray-500">
-                    {filters.priceRange}
-                  </p>
-                )}
-              </div>
+              {!isInSearchMode ? (
+                // Normal state - only title
+                <span className="text-sm font-medium text-black">Price</span>
+              ) : (
+                // Search mode - title + description
+                <div className="flex flex-col items-start gap-0.5 w-full">
+                  <span className="text-xs font-medium text-black">Price</span>
+                  <span className="text-sm font-normal text-gray-400">
+                    {filters.priceRange || "Any Price"}
+                  </span>
+                </div>
+              )}
             </button>
 
             {isOpen("price") && (

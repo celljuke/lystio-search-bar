@@ -25,10 +25,14 @@ export function Header() {
           isAnyPopoverOpen() ? "h-44" : "h-20"
         }`}
       >
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+        <div className="px-4 sm:px-6 lg:px-8 h-full">
+          <div
+            className={`flex items-center justify-between transition-all duration-200 ${
+              isAnyPopoverOpen() ? "h-full" : "h-20"
+            }`}
+          >
             {/* Logo */}
-            <div className="flex flex-shrink-0 items-center">
+            <div className="flex flex-shrink-0 items-center self-start pt-6">
               <a href="/">
                 <Image
                   src="/images/logo.svg"
@@ -40,19 +44,30 @@ export function Header() {
               </a>
             </div>
 
-            {/* Search Bar - Responsive for both mobile and desktop */}
-            <div className="flex flex-1 max-w-2xl mx-8 flex-col space-y-4">
+            {/* Search Area - Rent/Buy toggle above, Search Bar below */}
+            <div
+              className={`flex flex-1 max-w-2xl mx-8 flex-col items-center transition-all duration-200 ${
+                isAnyPopoverOpen() ? "gap-3 justify-center" : "justify-center"
+              }`}
+            >
+              {/* Rent/Buy Toggle - Only visible in search mode */}
               {isAnyPopoverOpen() && (
-                <RentBuyToggle
-                  value={rentBuyValue}
-                  onChange={setRentBuyValue}
-                />
+                <div className="w-full flex justify-center">
+                  <RentBuyToggle
+                    value={rentBuyValue}
+                    onChange={setRentBuyValue}
+                  />
+                </div>
               )}
-              <SearchBar />
+
+              {/* Search Bar */}
+              <div className="w-full">
+                <SearchBar />
+              </div>
             </div>
 
             {/* Right side actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 self-start pt-6">
               {/* Language Selector */}
               <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <Globe className="w-5 h-5" />
@@ -66,9 +81,6 @@ export function Header() {
               </button>
             </div>
           </div>
-
-          {/* Mobile Search Bar - Removed to prevent duplicate popover rendering */}
-          {/* The desktop SearchBar above handles both desktop and mobile */}
         </div>
       </nav>
     </>
