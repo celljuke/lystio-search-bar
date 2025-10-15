@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { SearchBarProps } from "../types";
+import { SearchBarProps, PropertyTypeFilter } from "../types";
 import { useSearch } from "../hooks/use-search";
 import { useSearchStore } from "../store";
 import { cn } from "@/lib/utils";
@@ -60,9 +60,16 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
     closeDropdown();
   };
 
-  const handleCategorySelect = (category: string) => {
-    updateFilter("propertyType", category);
-    closeDropdown();
+  const handleCategorySelect = (
+    categoryName: string,
+    propertyTypeFilter: PropertyTypeFilter,
+    shouldClose: boolean = true
+  ) => {
+    // Store the full PropertyTypeFilter object in the filters
+    updateFilter("propertyType", propertyTypeFilter);
+    if (shouldClose) {
+      closeDropdown();
+    }
   };
 
   const handlePriceSelect = (priceRange: string) => {
@@ -114,7 +121,7 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
             onClick={() => toggle("category")}
             title="Category"
             description="Apartments"
-            value={filters.propertyType}
+            value={filters.propertyType?.categoryName || ""}
             descriptionColor="black"
           >
             {isOpen("category") && (

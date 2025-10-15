@@ -8,7 +8,7 @@ interface SearchState {
   results: any[];
 
   setFilters: (filters: SearchFilters) => void;
-  updateFilter: (key: keyof SearchFilters, value: string) => void;
+  updateFilter: (key: keyof SearchFilters, value: any) => void;
   setIsSearching: (isSearching: boolean) => void;
   setResults: (results: any[]) => void;
   resetFilters: () => void;
@@ -21,12 +21,17 @@ interface SearchState {
   openPopover: PopoverId | null;
   isInSearchMode: boolean;
   isAnyPopoverOpen: () => boolean;
+
+  // Category selection state
+  selectedCategoryId: string | null;
+  selectedSubcategories: string[];
+  setSelectedCategory: (categoryId: string, subcategories: string[]) => void;
 }
 
 export const useSearchStore = create<SearchState>((set, get) => ({
   filters: {
     location: "",
-    propertyType: "",
+    propertyType: null,
     priceRange: "",
   },
   isSearching: false,
@@ -48,7 +53,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     set({
       filters: {
         location: "",
-        propertyType: "",
+        propertyType: null,
         priceRange: "",
       },
     }),
@@ -84,4 +89,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   isAnyPopoverOpen: () => {
     return get().isInSearchMode;
   },
+
+  // Category selection state
+  selectedCategoryId: "apartments",
+  selectedSubcategories: ["all"],
+
+  setSelectedCategory: (categoryId: string, subcategories: string[]) =>
+    set({
+      selectedCategoryId: categoryId,
+      selectedSubcategories: subcategories,
+    }),
 }));
