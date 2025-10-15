@@ -1,7 +1,7 @@
 "use client";
 
 import { Home } from "lucide-react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface CategoryPopoverProps {
   onSelectCategory: (category: string) => void;

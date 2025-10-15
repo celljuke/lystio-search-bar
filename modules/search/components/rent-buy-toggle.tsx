@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 interface RentBuyToggleProps {
   value: "rent" | "buy" | "ai";

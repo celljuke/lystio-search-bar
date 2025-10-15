@@ -1,7 +1,7 @@
 "use client";
 
-import { SearchBar, RentBuyToggle } from "../../modules/search";
-import { useSearchStore } from "../../modules/search/store";
+import { SearchBar, RentBuyToggle } from "@/modules/search";
+import { useSearchStore } from "@/modules/search/store";
 import { Globe, User } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";

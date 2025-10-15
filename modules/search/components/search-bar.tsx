@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { SearchBarProps } from "../types";
 import { useSearch } from "../hooks/use-search";
 import { useSearchStore } from "../store";
-import { cn } from "../../../lib/utils";
+import { cn } from "@/lib/utils";
 import { SearchButton } from "./search-button";
 import { SearchTrigger } from "./search-trigger";
 import { LocationPopover } from "./location-popover";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface SearchButtonProps {
   onClick: () => void;
