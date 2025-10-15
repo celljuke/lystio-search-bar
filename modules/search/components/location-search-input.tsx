@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useSearchBoxCore } from "@mapbox/search-js-react";
 import { config } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { MapPin, X } from "lucide-react";
@@ -11,6 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+// Dynamically import Mapbox to avoid SSR issues
+let useSearchBoxCore: any = null;
+if (typeof window !== "undefined") {
+  const MapboxSearch = require("@mapbox/search-js-react");
+  useSearchBoxCore = MapboxSearch.useSearchBoxCore;
+}
 
 interface LocationSearchInputProps {
   value: string; // Comma-separated string of locations
@@ -43,9 +49,11 @@ export function LocationSearchInput({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [sessionToken, setSessionToken] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchBoxCore = useSearchBoxCore({
-    accessToken: config.mapbox.accessToken,
-  });
+  const searchBoxCore = useSearchBoxCore
+    ? useSearchBoxCore({
+        accessToken: config.mapbox.accessToken,
+      })
+    : null;
 
   // Initialize selected locations from value
   useEffect(() => {
@@ -77,7 +85,7 @@ export function LocationSearchInput({
     // Fetch suggestions when input changes
     const fetchSuggestions = async () => {
       // Only show search suggestions if user is typing (inputValue is not empty)
-      if (!inputValue || inputValue.length < 2) {
+      if (!inputValue || inputValue.length < 2 || !searchBoxCore) {
         setSuggestions([]);
         setIsOpen(false);
         return;
