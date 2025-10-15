@@ -3,7 +3,7 @@ import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import TRPCProvider from "@/lib/trpc/provider";
-import { TopBar } from "@/components/top-bar";
+import { Header } from "@/components/header";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -37,8 +37,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCProvider>
-            <main className="flex flex-col">
-              <TopBar />
+            <main className="flex flex-col font-sans">
+              <Header />
 
               {children}
             </main>
