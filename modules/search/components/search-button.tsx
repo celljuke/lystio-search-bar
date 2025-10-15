@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface SearchButtonProps {
   onClick: () => void;
@@ -15,7 +16,7 @@ export function SearchButton({
   className = "",
 }: SearchButtonProps) {
   return (
-    <div className={`absolute right-2 top-1/2 -translate-y-1/2 ${className}`}>
+    <div className={cn("absolute right-2 top-1/2 -translate-y-1/2", className)}>
       {!isSearchMode ? (
         // Normal state - Icon only
         <Button

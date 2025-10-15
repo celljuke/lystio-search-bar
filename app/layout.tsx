@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import TRPCProvider from "@/lib/trpc/provider";
 import { Header } from "@/components/header";
+import { cn } from "@/lib/utils";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -28,7 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
+        className={cn(
+          plusJakartaSans.variable,
+          geistMono.variable,
+          "antialiased"
+        )}
       >
         <ThemeProvider
           attribute="class"

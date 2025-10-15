@@ -74,9 +74,10 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
       {/* Desktop Layout */}
       <div className="hidden md:block w-full" ref={searchBarRef}>
         <div
-          className={`relative bg-white rounded-full shadow-lg border border-gray-200 transition-all duration-200 flex items-center ${
+          className={cn(
+            "relative bg-white rounded-full shadow-lg border border-gray-200 transition-all duration-200 flex items-center",
             isInSearchMode ? "h-16" : "h-14"
-          }`}
+          )}
         >
           {/* Location Trigger */}
           <SearchTrigger

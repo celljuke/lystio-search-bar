@@ -24,15 +24,17 @@ export function Header() {
       )}
 
       <nav
-        className={`w-full divide-y bg-white sticky top-0 z-50 shadow-none lg:shadow-sm transition-all duration-200 ${
+        className={cn(
+          "w-full divide-y bg-white sticky top-0 z-50 shadow-none lg:shadow-sm transition-all duration-200",
           isAnyPopoverOpen() ? "h-44" : "h-20"
-        }`}
+        )}
       >
         <div className="px-4 sm:px-6 lg:px-8 h-full">
           <div
-            className={`flex items-center justify-between transition-all duration-200 ${
+            className={cn(
+              "flex items-center justify-between transition-all duration-200",
               isAnyPopoverOpen() ? "h-full" : "h-20"
-            }`}
+            )}
           >
             {/* Logo */}
             <div className="flex flex-shrink-0 items-center self-start pt-6">
