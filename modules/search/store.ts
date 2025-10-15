@@ -15,7 +15,11 @@ interface SearchState {
 
   isOpen: (id: PopoverId) => boolean;
   toggle: (id: PopoverId) => void;
+  setOpenPopover: (id: PopoverId | null) => void;
+  closeDropdown: () => void; // Close dropdown but keep search mode active
+  exitSearchMode: () => void; // Close everything including overlay
   openPopover: PopoverId | null;
+  isInSearchMode: boolean;
   isAnyPopoverOpen: () => boolean;
 }
 
@@ -49,17 +53,34 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     }),
 
   openPopover: null,
-  setOpenPopover: (id: PopoverId) => set({ openPopover: id }),
+  isInSearchMode: false,
+
+  setOpenPopover: (id: PopoverId | null) =>
+    set({ openPopover: id, isInSearchMode: id !== null }),
+
   isOpen: (id: PopoverId) => get().openPopover === id,
+
   toggle: (id: PopoverId) => {
     const currentOpen = get().openPopover;
-    set({ openPopover: currentOpen === id ? null : id });
+    // If clicking the same button, close it but stay in search mode. Otherwise, switch to the new one
+    if (currentOpen === id) {
+      set({ openPopover: null, isInSearchMode: true });
+    } else {
+      set({ openPopover: id, isInSearchMode: true });
+    }
   },
+
+  closeDropdown: () => {
+    // Close dropdown but keep search mode active (overlay stays)
+    set({ openPopover: null, isInSearchMode: true });
+  },
+
+  exitSearchMode: () => {
+    // Close everything - dropdown and search mode (overlay disappears)
+    set({ openPopover: null, isInSearchMode: false });
+  },
+
   isAnyPopoverOpen: () => {
-    return (
-      get().isOpen("location") ||
-      get().isOpen("category") ||
-      get().isOpen("price")
-    );
+    return get().isInSearchMode;
   },
 }));

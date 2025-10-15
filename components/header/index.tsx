@@ -8,12 +8,17 @@ import Image from "next/image";
 
 export function Header() {
   const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy">("rent");
-  const { isAnyPopoverOpen } = useSearchStore();
+  const { isAnyPopoverOpen, exitSearchMode } = useSearchStore();
 
   return (
     <>
       {/* Overlay when dropdown is open */}
-      {isAnyPopoverOpen() && <div className="fixed inset-0 bg-black/20 z-40" />}
+      {isAnyPopoverOpen() && (
+        <div
+          className="search-overlay fixed inset-0 bg-black/20 z-40"
+          onClick={() => exitSearchMode()}
+        />
+      )}
 
       <nav
         className={`w-full divide-y bg-white sticky top-0 z-50 shadow-none lg:shadow-sm transition-all duration-200 ${
@@ -35,8 +40,8 @@ export function Header() {
               </a>
             </div>
 
-            {/* Search Bar - Hidden on mobile, shown on desktop */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8 flex-col space-y-4">
+            {/* Search Bar - Responsive for both mobile and desktop */}
+            <div className="flex flex-1 max-w-2xl mx-8 flex-col space-y-4">
               {isAnyPopoverOpen() && (
                 <RentBuyToggle
                   value={rentBuyValue}
@@ -62,13 +67,8 @@ export function Header() {
             </div>
           </div>
 
-          {/* Mobile Search Bar */}
-          <div className="md:hidden pb-4 space-y-4">
-            {isAnyPopoverOpen() && (
-              <RentBuyToggle value={rentBuyValue} onChange={setRentBuyValue} />
-            )}
-            <SearchBar />
-          </div>
+          {/* Mobile Search Bar - Removed to prevent duplicate popover rendering */}
+          {/* The desktop SearchBar above handles both desktop and mobile */}
         </div>
       </nav>
     </>
