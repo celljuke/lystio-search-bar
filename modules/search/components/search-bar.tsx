@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { SearchBarProps, PropertyTypeFilter } from "../types";
+import { SearchBarProps, PropertyTypeFilter, PriceRangeFilter } from "../types";
 import { useSearch } from "../hooks/use-search";
 import { useSearchStore } from "../store";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,11 @@ import { CategoryPopover } from "./category-popover";
 import { PricePopover } from "./price-popover";
 import { LocationSearchInput } from "./location-search-input";
 
-export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
+export function SearchBar({
+  onSearch,
+  className = "",
+  rentBuyMode = "rent",
+}: SearchBarProps) {
   const { filters, isSearching, updateFilter, performSearch } = useSearch();
   const { isOpen, toggle, closeDropdown, openPopover } = useSearchStore();
 
@@ -72,9 +76,27 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
     }
   };
 
-  const handlePriceSelect = (priceRange: string) => {
+  const handlePriceSelect = (priceRange: PriceRangeFilter) => {
     updateFilter("priceRange", priceRange);
     closeDropdown();
+  };
+
+  // Format price display for the trigger
+  const formatPriceDisplay = (priceRange: PriceRangeFilter | null): string => {
+    if (!priceRange) return "";
+    const formatPrice = (price: number) => {
+      if (rentBuyMode === "rent" || rentBuyMode === "ai") {
+        return `€${price.toLocaleString()}`;
+      }
+      if (price >= 1000000) {
+        return `€${(price / 1000000).toFixed(1)}M`;
+      }
+      if (price >= 1000) {
+        return `€${(price / 1000).toFixed(0)}K`;
+      }
+      return `€${price.toLocaleString()}`;
+    };
+    return `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`;
   };
 
   return (
@@ -139,12 +161,15 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
             onClick={() => toggle("price")}
             title="Price"
             description="Any Price"
-            value={filters.priceRange}
+            value={formatPriceDisplay(filters.priceRange)}
             descriptionColor="gray"
             paddingRight={isInSearchMode ? "pr-24" : "pr-16"}
           >
             {isOpen("price") && (
-              <PricePopover onSelectPrice={handlePriceSelect} />
+              <PricePopover
+                rentBuyMode={rentBuyMode}
+                onSelectPrice={handlePriceSelect}
+              />
             )}
           </SearchTrigger>
 

@@ -4,10 +4,16 @@ export interface PropertyTypeFilter {
   subcategories: string[]; // Array of subcategory IDs
 }
 
+export interface PriceRangeFilter {
+  min: number;
+  max: number;
+  currency: string;
+}
+
 export interface SearchFilters {
   location: string;
   propertyType: PropertyTypeFilter | null;
-  priceRange: string;
+  priceRange: PriceRangeFilter | null;
 }
 
 export interface SearchState {
@@ -19,6 +25,7 @@ export interface SearchState {
 export interface SearchBarProps {
   onSearch?: (filters: SearchFilters) => void;
   className?: string;
+  rentBuyMode?: "rent" | "buy" | "ai";
 }
 
 export interface Subcategory {

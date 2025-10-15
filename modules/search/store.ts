@@ -32,7 +32,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   filters: {
     location: "",
     propertyType: null,
-    priceRange: "",
+    priceRange: null,
   },
   isSearching: false,
   results: [],
@@ -54,7 +54,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       filters: {
         location: "",
         propertyType: null,
-        priceRange: "",
+        priceRange: null,
       },
     }),
 

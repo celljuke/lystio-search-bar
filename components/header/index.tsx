@@ -69,7 +69,7 @@ export function Header() {
 
               {/* Search Bar */}
               <div className="w-full">
-                <SearchBar />
+                <SearchBar rentBuyMode={rentBuyValue} />
               </div>
             </div>
 
