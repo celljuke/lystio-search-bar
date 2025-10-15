@@ -8,7 +8,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#F6F7F9]">
       <main className="flex w-full h-[calc(100vh-80px)] overflow-hidden">
         {/* Left Panel - Map */}
-        <div className="hidden lg:block lg:w-[60%] xl:w-[65%] h-full relative">
+        <div className="hidden lg:block flex-1 h-full relative">
           <Map
             accessToken={config.mapbox.accessToken}
             initialCenter={[16.3738, 48.2082]} // Vienna, Austria
@@ -18,7 +18,7 @@ export default function Home() {
         </div>
 
         {/* Right Panel - Property List */}
-        <div className="w-full lg:w-[40%] xl:w-[35%] h-full overflow-y-auto bg-white">
+        <div className="w-full lg:w-[700px] xl:w-[767px] h-full overflow-y-auto bg-white">
           <div className="p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

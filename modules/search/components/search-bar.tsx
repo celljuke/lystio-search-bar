@@ -10,6 +10,7 @@ import { SearchTrigger } from "./search-trigger";
 import { LocationPopover } from "./location-popover";
 import { CategoryPopover } from "./category-popover";
 import { PricePopover } from "./price-popover";
+import { LocationSearchInput } from "./location-search-input";
 
 export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
   const { filters, isSearching, updateFilter, performSearch } = useSearch();
@@ -88,7 +89,17 @@ export function SearchBar({ onSearch, className = "" }: SearchBarProps) {
             description="City District, Street, Postcode"
             value={filters.location}
             descriptionColor="gray"
+            disableClick={isInSearchMode}
+            renderDescription={() => (
+              <LocationSearchInput
+                value={filters.location}
+                onSelect={handleLocationSelect}
+                placeholder="Find a location, street, region or zip"
+                showPopover={isOpen("location")}
+              />
+            )}
           >
+            {/* Show location popover when opened and user hasn't started typing */}
             {isOpen("location") && (
               <LocationPopover onSelectLocation={handleLocationSelect} />
             )}

@@ -34,10 +34,11 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
   setFilters: (filters) => set({ filters }),
 
-  updateFilter: (key, value) =>
+  updateFilter: (key, value) => {
     set((state) => ({
       filters: { ...state.filters, [key]: value },
-    })),
+    }));
+  },
 
   setIsSearching: (isSearching) => set({ isSearching }),
 

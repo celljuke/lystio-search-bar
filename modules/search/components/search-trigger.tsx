@@ -14,6 +14,8 @@ interface SearchTriggerProps {
   children?: ReactNode;
   className?: string;
   paddingRight?: string;
+  renderDescription?: () => ReactNode;
+  disableClick?: boolean;
 }
 
 export function SearchTrigger({
@@ -27,6 +29,8 @@ export function SearchTrigger({
   children,
   className = "",
   paddingRight,
+  renderDescription,
+  disableClick = false,
 }: SearchTriggerProps) {
   const roundedClass =
     isRounded === "left"
@@ -37,36 +41,49 @@ export function SearchTrigger({
 
   const prClass = paddingRight ? paddingRight : isSearchMode ? "pr-6" : "pr-6";
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (disableClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onClick();
+  };
+
   return (
     <div className={cn("relative flex-1 h-full", className)}>
-      <button
+      <div
         className={cn(
-          "flex h-full w-full items-center hover:bg-gray-50 px-6 cursor-pointer bg-transparent border-none transition-colors",
+          "flex h-full w-full items-center hover:bg-gray-50 px-6 bg-transparent transition-colors",
           roundedClass,
           isSearchMode ? "justify-start" : "justify-center",
-          prClass
+          prClass,
+          !disableClick && "cursor-pointer"
         )}
-        type="button"
-        onClick={onClick}
+        onClick={handleClick}
       >
         {!isSearchMode ? (
           // Normal state - only title centered
           <span className="text-sm font-medium text-black">{title}</span>
         ) : (
-          // Search mode - title + description left-aligned
+          // Search mode - title + description/custom content left-aligned
           <div className="flex flex-col items-start gap-0.5 w-full">
             <span className="text-xs font-medium text-black">{title}</span>
-            <span
-              className={cn(
-                "text-sm font-normal truncate",
-                descriptionColor === "gray" ? "text-gray-400" : "text-black"
-              )}
-            >
-              {value || description}
-            </span>
+            {renderDescription ? (
+              renderDescription()
+            ) : (
+              <span
+                className={cn(
+                  "text-sm font-normal truncate",
+                  descriptionColor === "gray" ? "text-gray-400" : "text-black"
+                )}
+              >
+                {value || description}
+              </span>
+            )}
           </div>
         )}
-      </button>
+      </div>
       {children}
     </div>
   );
