@@ -27,9 +27,12 @@ interface LocationSearchInputProps {
     center?: { lng: number; lat: number }
   ) => void;
   onFocus?: () => void;
+  onInputChange?: (value: string) => void; // Callback when input value changes
+  onSuggestionsChange?: (suggestions: SearchSuggestion[]) => void; // Callback when suggestions change
   placeholder?: string;
   className?: string;
   showPopover?: boolean; // Control from parent whether location popover is visible
+  renderSuggestionsInline?: boolean; // If true, don't show popover, let parent render suggestions
 }
 
 interface SearchSuggestion {
@@ -44,9 +47,12 @@ export function LocationSearchInput({
   onSelect,
   onSelectWithBbox,
   onFocus,
+  onInputChange,
+  onSuggestionsChange,
   placeholder = "Find a location, street, region or zip",
   className = "",
   showPopover = false,
+  renderSuggestionsInline = false,
 }: LocationSearchInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
@@ -60,6 +66,16 @@ export function LocationSearchInput({
         accessToken: config.mapbox.accessToken,
       })
     : null;
+
+  // Notify parent when input value changes
+  useEffect(() => {
+    onInputChange?.(inputValue);
+  }, [inputValue, onInputChange]);
+
+  // Notify parent when suggestions change
+  useEffect(() => {
+    onSuggestionsChange?.(suggestions);
+  }, [suggestions, onSuggestionsChange]);
 
   // Initialize selected locations from value
   useEffect(() => {
@@ -308,8 +324,8 @@ export function LocationSearchInput({
         )}
       </div>
 
-      {/* Search Suggestions Popover - Only when user is typing */}
-      {shouldShowSearchPopover && (
+      {/* Search Suggestions Popover - Only when user is typing and not rendering inline */}
+      {shouldShowSearchPopover && !renderSuggestionsInline && (
         <Popover open={shouldShowSearchPopover} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <div className="absolute inset-0 pointer-events-none" />
@@ -365,3 +381,6 @@ export function LocationSearchInput({
     </>
   );
 }
+
+// Export the SearchSuggestion type for use in other components
+export type { SearchSuggestion };

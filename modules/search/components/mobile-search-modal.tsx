@@ -3,22 +3,26 @@
 import { useEffect, useState } from "react";
 import { useSearchStore } from "../store";
 import { useLocationSelect } from "../hooks/use-location-select";
-import { LocationSearchInput } from "./location-search-input";
+import {
+  LocationSearchInput,
+  type SearchSuggestion,
+} from "./location-search-input";
 import { MobileLocationContent } from "./mobile-location-content";
+import { MobileSearchSuggestions } from "./mobile-search-suggestions";
 import { X, Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileSearchModal() {
   const { isMobileSearchOpen, closeMobileSearch } = useSearchStore();
   const { selectLocation, selectLocationWithBbox } = useLocationSelect();
-  const [localSearchValue, setLocalSearchValue] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
 
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isMobileSearchOpen) {
-      setLocalSearchValue("");
-      setShowSuggestions(false);
+      setIsTyping(false);
+      setSuggestions([]);
     }
   }, [isMobileSearchOpen]);
 
@@ -37,8 +41,17 @@ export function MobileSearchModal() {
   };
 
   const handleInputChange = (value: string) => {
-    setLocalSearchValue(value);
-    setShowSuggestions(value.length > 0);
+    // Show/hide content based on whether user is typing
+    setIsTyping(value.length > 0);
+  };
+
+  const handleSuggestionsChange = (newSuggestions: SearchSuggestion[]) => {
+    setSuggestions(newSuggestions);
+  };
+
+  const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
+    // This mimics what LocationSearchInput does internally
+    handleLocationSelect(suggestion.name);
   };
 
   if (!isMobileSearchOpen) return null;
@@ -72,18 +85,21 @@ export function MobileSearchModal() {
               <SearchIcon className="w-5 h-5" />
             </div>
             <LocationSearchInput
-              value={localSearchValue}
+              value=""
               onSelect={handleLocationSelect}
               onSelectWithBbox={handleLocationSelectWithBbox}
+              onInputChange={handleInputChange}
+              onSuggestionsChange={handleSuggestionsChange}
               placeholder="City District, Street, Postcode"
-              showPopover={showSuggestions}
+              showPopover={false}
+              renderSuggestionsInline={true}
               className="w-full h-14 pl-4 pr-12 text-base bg-transparent border-0 focus:outline-none"
             />
           </div>
         </div>
 
-        {/* Content Area - Only show when not typing */}
-        {!showSuggestions && (
+        {/* Content Area */}
+        {!isTyping ? (
           <>
             {/* Search by Drawing CTA */}
             <div className="px-4 mb-4">
@@ -129,6 +145,14 @@ export function MobileSearchModal() {
               <MobileLocationContent onSelectLocation={handleLocationSelect} />
             </div>
           </>
+        ) : (
+          /* Search Suggestions */
+          <div className="flex-1 overflow-y-auto px-4">
+            <MobileSearchSuggestions
+              suggestions={suggestions}
+              onSelectSuggestion={handleSuggestionSelect}
+            />
+          </div>
         )}
       </div>
     </>
