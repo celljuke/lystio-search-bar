@@ -3,6 +3,8 @@ export { SearchBar } from "./components/search-bar";
 export { RentBuyToggle } from "./components/rent-buy-toggle";
 export { PropertyCard } from "./components/property-card";
 export { PropertyList } from "./components/property-list";
+export { MobileSearchModal } from "./components/mobile-search-modal";
+export { MobileActionButtons } from "./components/mobile-action-buttons";
 
 // Hooks
 export { useSearch } from "./hooks/use-search";

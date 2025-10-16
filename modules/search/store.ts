@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { SearchFilters } from "./types";
 
 type PopoverId = "location" | "category" | "price";
+type ViewMode = "list" | "map";
+
 interface SearchState {
   filters: SearchFilters;
   isSearching: boolean;
@@ -26,6 +28,15 @@ interface SearchState {
   selectedCategoryId: string | null;
   selectedSubcategories: string[];
   setSelectedCategory: (categoryId: string, subcategories: string[]) => void;
+
+  // View mode state (mobile)
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+
+  // Mobile search state
+  isMobileSearchOpen: boolean;
+  openMobileSearch: () => void;
+  closeMobileSearch: () => void;
 }
 
 export const useSearchStore = create<SearchState>((set, get) => ({
@@ -101,4 +112,13 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       selectedCategoryId: categoryId,
       selectedSubcategories: subcategories,
     }),
+
+  // View mode state (mobile)
+  viewMode: "list",
+  setViewMode: (mode: ViewMode) => set({ viewMode: mode }),
+
+  // Mobile search state
+  isMobileSearchOpen: false,
+  openMobileSearch: () => set({ isMobileSearchOpen: true }),
+  closeMobileSearch: () => set({ isMobileSearchOpen: false }),
 }));

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface LocationPopoverProps {
   onSelectLocation: (location: string) => void;
+  className?: string;
 }
 
 interface City {
@@ -38,9 +39,17 @@ const STATES: State[] = [
   },
 ];
 
-export function LocationPopover({ onSelectLocation }: LocationPopoverProps) {
+export function LocationPopover({
+  onSelectLocation,
+  className,
+}: LocationPopoverProps) {
   return (
-    <div className="absolute top-full left-0 mt-2 w-[300px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] overflow-hidden">
+    <div
+      className={cn(
+        "absolute top-full left-0 mt-2 w-[300px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] overflow-hidden",
+        className
+      )}
+    >
       <div className="max-h-[500px] overflow-y-auto p-3">
         <div className="space-y-6">
           {/* Draw an area on the map */}
