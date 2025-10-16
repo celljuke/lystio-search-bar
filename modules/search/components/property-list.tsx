@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Virtualizer } from "virtua";
 import { PropertyCard } from "./property-card";
 import { usePropertySearch } from "../hooks/use-property-search";
 import { Loader2 } from "lucide-react";
@@ -20,30 +21,35 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
     isFetchingNextPage,
   } = usePropertySearch();
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const scrollParentRef = useRef<HTMLElement | null>(null);
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
-  // Infinite scroll implementation
+  // Set the scroll parent ref on mount
   useEffect(() => {
+    const scrollContainer = document.querySelector(
+      ".overflow-y-auto"
+    ) as HTMLElement;
+    if (scrollContainer) {
+      scrollParentRef.current = scrollContainer;
+    }
+  }, []);
+
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    const trigger = loadMoreTriggerRef.current;
+    if (!trigger || !hasNextPage || isFetchingNextPage) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           loadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: "200px" }
     );
 
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
+    observer.observe(trigger);
+    return () => observer.unobserve(trigger);
   }, [hasNextPage, isFetchingNextPage, loadMore]);
 
   // Loading state
@@ -120,10 +126,19 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
     );
   }
 
+  // Create rows of 2 properties each for virtualization
+  const rows = [];
+  for (let i = 0; i < properties.length; i += 2) {
+    rows.push({
+      left: properties[i],
+      right: properties[i + 1] || null,
+    });
+  }
+
   return (
-    <div ref={scrollContainerRef} className="space-y-6">
+    <div className="p-6">
       {/* Results Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
             {pagination?.total || 0} Listing
@@ -155,16 +170,26 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
         </button>
       </div>
 
-      {/* Property Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {properties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            onClick={() => onPropertyClick?.(property.id)}
-          />
+      {/* Virtualized Property Grid */}
+      <Virtualizer scrollRef={scrollParentRef}>
+        {rows.map((row, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+          >
+            <PropertyCard
+              property={row.left}
+              onClick={() => onPropertyClick?.(row.left.id)}
+            />
+            {row.right && (
+              <PropertyCard
+                property={row.right}
+                onClick={() => onPropertyClick?.(row.right.id)}
+              />
+            )}
+          </div>
         ))}
-      </div>
+      </Virtualizer>
 
       {/* Loading More Indicator */}
       {isFetchingNextPage && (
@@ -173,20 +198,8 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
         </div>
       )}
 
-      {/* Infinite Scroll Observer Target */}
-      <div ref={observerTarget} className="h-4" />
-
-      {/* Load More Button (fallback) */}
-      {hasNextPage && !isFetchingNextPage && (
-        <div className="flex justify-center py-4">
-          <button
-            onClick={loadMore}
-            className="px-6 py-3 text-sm font-medium text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition-colors"
-          >
-            Load More Properties
-          </button>
-        </div>
-      )}
+      {/* Infinite Scroll Trigger */}
+      {hasNextPage && <div ref={loadMoreTriggerRef} className="h-4" />}
     </div>
   );
 }

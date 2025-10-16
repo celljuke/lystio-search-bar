@@ -27,15 +27,13 @@ export default function Home() {
         </div>
 
         {/* Right Panel - Property List */}
-        <div className="w-full lg:w-[700px] xl:w-[767px] h-full overflow-y-auto bg-white">
-          <div className="p-6">
-            <PropertyList
-              onPropertyClick={(propertyId) => {
-                console.log("Property clicked:", propertyId);
-                // TODO: Navigate to property detail page
-              }}
-            />
-          </div>
+        <div className="w-full lg:w-[700px] xl:w-[767px] h-full bg-white overflow-y-auto">
+          <PropertyList
+            onPropertyClick={(propertyId) => {
+              console.log("Property clicked:", propertyId);
+              // TODO: Navigate to property detail page
+            }}
+          />
         </div>
       </main>
     </div>
