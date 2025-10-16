@@ -1,5 +1,6 @@
 import type { SearchFilters, PropertyTypeFilter } from "../types";
 import type { SearchFilter } from "@/server/services/search/schema";
+import { $Enums } from "@/lib/generated/prisma";
 import { getBboxForLocation } from "./location-utils";
 import { CATEGORIES } from "../constants/categories";
 
