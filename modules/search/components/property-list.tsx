@@ -34,22 +34,23 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
     }
   }, []);
 
-  // Infinite scroll with IntersectionObserver
+  // Infinite scroll with scroll event listener
   useEffect(() => {
-    const trigger = loadMoreTriggerRef.current;
-    if (!trigger || !hasNextPage || isFetchingNextPage) return;
+    const scrollContainer = scrollParentRef.current;
+    if (!scrollContainer || !hasNextPage || isFetchingNextPage) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1, rootMargin: "200px" }
-    );
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
 
-    observer.observe(trigger);
-    return () => observer.unobserve(trigger);
+      // Load more when scrolled 80% down
+      if (scrollPercentage > 0.8 && hasNextPage && !isFetchingNextPage) {
+        loadMore();
+      }
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [hasNextPage, isFetchingNextPage, loadMore]);
 
   // Loading state
@@ -189,17 +190,20 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
             )}
           </div>
         ))}
+
+        {/* Loading More Indicator */}
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+          </div>
+        )}
+
+        {/* Infinite Scroll Trigger */}
+        {hasNextPage && <div ref={loadMoreTriggerRef} className="h-20" />}
+
+        {/* Bottom Padding */}
+        {!hasNextPage && <div className="h-6" />}
       </Virtualizer>
-
-      {/* Loading More Indicator */}
-      {isFetchingNextPage && (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-        </div>
-      )}
-
-      {/* Infinite Scroll Trigger */}
-      {hasNextPage && <div ref={loadMoreTriggerRef} className="h-4" />}
     </div>
   );
 }

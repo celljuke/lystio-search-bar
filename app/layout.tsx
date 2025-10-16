@@ -27,12 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full overflow-hidden">
       <body
         className={cn(
           plusJakartaSans.variable,
           geistMono.variable,
-          "antialiased"
+          "antialiased h-full overflow-hidden"
         )}
       >
         <ThemeProvider
@@ -42,7 +42,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCProvider>
-            <main className="flex flex-col font-sans">
+            <main className="flex flex-col font-sans h-full">
               <Header />
 
               {children}
