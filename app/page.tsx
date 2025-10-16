@@ -24,7 +24,7 @@ export default function Home() {
       {/* Mobile Action Buttons */}
       <MobileActionButtons />
 
-      <div className="flex w-full h-[calc(100vh-200px)] md:h-[calc(100vh-80px)] overflow-hidden bg-[#F6F7F9]">
+      <div className="flex w-full h-[calc(100vh)] overflow-hidden bg-[#F6F7F9]">
         {/* Left Panel - Map (Desktop always visible, Mobile based on viewMode) */}
         <div
           className={`${
