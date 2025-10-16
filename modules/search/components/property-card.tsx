@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Building, Bed, Bath, Maximize, MapPin, Calendar } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import {
   formatPrice,
   formatPricePerSqm,
@@ -27,11 +28,10 @@ export function PropertyCard({
   const mainImage = property.media?.[0]?.cdnUrl;
   const hasImage = Boolean(mainImage);
 
-  // Calculate days ago
-  const daysAgo = Math.floor(
-    (Date.now() - new Date(property.createdAt).getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
+  // Format time ago
+  const timeAgo = formatDistanceToNow(new Date(property.createdAt), {
+    addSuffix: true,
+  });
 
   // Get agent/owner info
   const agent = property.user || property.owner;
@@ -84,7 +84,8 @@ export function PropertyCard({
           )}
           {property.tenementCount > 0 && (
             <Badge className="bg-black/50 hover:bg-black/40 text-white font-semibold shadow-md rounded-full">
-              {property.tenementCount} Units
+              {property.tenementCount}{" "}
+              {property.tenementCount === 1 ? "Unit" : "Units"}
             </Badge>
           )}
         </div>
@@ -132,15 +133,15 @@ export function PropertyCard({
                   {agentName}
                 </p>
                 {property.owner && (
-                  <p className="text-xs text-white/90 drop-shadow-lg">
+                  <p className="text-xs text-white/90 drop-shadow-lg truncate max-w-[130px]">
                     {property.owner.name}
                   </p>
                 )}
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs font-medium text-white drop-shadow-lg">
-                {daysAgo === 0 ? "Today" : `${daysAgo} days ago`}
+              <p className="text-xs font-semibold text-white drop-shadow-lg">
+                {timeAgo}
               </p>
             </div>
           </div>
