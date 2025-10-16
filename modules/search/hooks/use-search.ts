@@ -1,26 +1,30 @@
 import { useCallback } from "react";
 import { SearchFilters } from "../types";
 import { useSearchStore } from "../store";
+import { usePropertySearch } from "./use-property-search";
 
+/**
+ * Main search hook that combines UI state with backend search
+ */
 export function useSearch() {
   const { filters, isSearching, setIsSearching, updateFilter } =
     useSearchStore();
+  const { search: triggerSearch, isLoading } = usePropertySearch();
 
   const performSearch = useCallback(
     async (searchFilters: SearchFilters) => {
       setIsSearching(true);
       try {
-        // TODO: Implement actual search logic with tRPC
         console.log("Searching with filters:", searchFilters);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Trigger the tRPC query refetch
+        await triggerSearch();
       } catch (error) {
         console.error("Search failed:", error);
       } finally {
         setIsSearching(false);
       }
     },
-    [setIsSearching]
+    [setIsSearching, triggerSearch]
   );
 
   const resetFilters = useCallback(() => {
@@ -29,7 +33,7 @@ export function useSearch() {
 
   return {
     filters,
-    isSearching,
+    isSearching: isSearching || isLoading,
     updateFilter,
     performSearch,
     resetFilters,

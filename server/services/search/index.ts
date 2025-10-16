@@ -24,6 +24,11 @@ export class SearchService {
     const skip = (paging.page - 1) * paging.pageSize;
     const take = paging.pageSize;
 
+    // If bbox filter is present, use raw SQL for location filtering
+    if (filter.bbox) {
+      return this.searchWithBbox(filter, where, orderBy, skip, take, paging);
+    }
+
     // Execute query with pagination
     const [properties, total] = await Promise.all([
       prisma.property.findMany({
@@ -68,6 +73,92 @@ export class SearchService {
       }),
       prisma.property.count({ where }),
     ]);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / paging.pageSize);
+    const hasNextPage = paging.page < totalPages;
+    const hasPreviousPage = paging.page > 1;
+
+    return {
+      properties,
+      pagination: {
+        page: paging.page,
+        pageSize: paging.pageSize,
+        total,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+      },
+    };
+  }
+
+  /**
+   * Search with bbox using raw SQL for location array filtering
+   */
+  private async searchWithBbox(
+    filter: SearchFilter,
+    where: Prisma.PropertyWhereInput,
+    orderBy:
+      | Prisma.PropertyOrderByWithRelationInput
+      | Prisma.PropertyOrderByWithRelationInput[],
+    skip: number,
+    take: number,
+    paging: { page: number; pageSize: number }
+  ) {
+    const [[minLng, minLat], [maxLng, maxLat]] = filter.bbox!;
+
+    // Build SQL WHERE clause from Prisma where object
+    // For now, we'll fetch all matching properties and filter in-memory
+    // TODO: Optimize with raw SQL query
+    const allProperties = await prisma.property.findMany({
+      where,
+      orderBy,
+      include: {
+        media: {
+          where: {
+            type: "PHOTO",
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+          take: 1,
+        },
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+            logoColor: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+          },
+        },
+        amenities: {
+          include: {
+            amenity: true,
+          },
+        },
+        spaces: true,
+        energy: true,
+      },
+    });
+
+    // Filter by bbox in-memory
+    const filteredProperties = allProperties.filter((property) => {
+      if (!property.location || property.location.length < 2) return false;
+      const [lng, lat] = property.location;
+      return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+    });
+
+    // Apply pagination to filtered results
+    const total = filteredProperties.length;
+    const properties = filteredProperties.slice(skip, skip + take);
 
     // Calculate pagination metadata
     const totalPages = Math.ceil(total / paging.pageSize);
@@ -230,39 +321,8 @@ export class SearchService {
     }
 
     // Location filters - bbox (bounding box)
-    if (filter.bbox) {
-      const [[minLng, minLat], [maxLng, maxLat]] = filter.bbox;
-
-      // PostgreSQL array comparison for location [lng, lat]
-      conditions.push({
-        AND: [
-          {
-            location: {
-              path: "$[0]",
-              gte: minLng,
-            } as any,
-          },
-          {
-            location: {
-              path: "$[0]",
-              lte: maxLng,
-            } as any,
-          },
-          {
-            location: {
-              path: "$[1]",
-              gte: minLat,
-            } as any,
-          },
-          {
-            location: {
-              path: "$[1]",
-              lte: maxLat,
-            } as any,
-          },
-        ],
-      });
-    }
+    // Note: bbox filtering is handled separately in searchWithBbox method
+    // Prisma doesn't support array element comparison directly
 
     if (filter.city) {
       conditions.push({

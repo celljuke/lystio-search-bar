@@ -31,6 +31,7 @@ interface SearchState {
 export const useSearchStore = create<SearchState>((set, get) => ({
   filters: {
     location: "",
+    locationData: null,
     propertyType: null,
     priceRange: null,
   },
@@ -53,6 +54,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     set({
       filters: {
         location: "",
+        locationData: null,
         propertyType: null,
         priceRange: null,
       },

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { SearchBarProps, PropertyTypeFilter, PriceRangeFilter } from "../types";
 import { useSearch } from "../hooks/use-search";
 import { useSearchStore } from "../store";
+import { useLocationSelect } from "../hooks/use-location-select";
 import { cn } from "@/lib/utils";
 import { SearchButton } from "./search-button";
 import { SearchTrigger } from "./search-trigger";
@@ -19,6 +20,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const { filters, isSearching, updateFilter, performSearch } = useSearch();
   const { isOpen, toggle, closeDropdown, openPopover } = useSearchStore();
+  const { selectLocation } = useLocationSelect();
 
   const searchBarRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,8 @@ export function SearchBar({
   const { isInSearchMode } = useSearchStore();
 
   const handleLocationSelect = (location: string) => {
-    updateFilter("location", location);
+    // Use the location select hook to set location with bbox
+    selectLocation(location);
     closeDropdown();
   };
 

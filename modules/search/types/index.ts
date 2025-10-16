@@ -10,8 +10,15 @@ export interface PriceRangeFilter {
   currency: string;
 }
 
+export interface LocationFilter {
+  name: string; // Display name (e.g., "Vienna")
+  bbox: [[number, number], [number, number]]; // [[minLng, minLat], [maxLng, maxLat]]
+  center?: { lng: number; lat: number }; // Optional center coordinates
+}
+
 export interface SearchFilters {
-  location: string;
+  location: string; // For backward compatibility and display
+  locationData: LocationFilter | null; // Actual location data with bbox
   propertyType: PropertyTypeFilter | null;
   priceRange: PriceRangeFilter | null;
 }
