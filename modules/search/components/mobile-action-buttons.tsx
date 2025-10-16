@@ -25,12 +25,12 @@ export function MobileActionButtons() {
           variant="outline"
           className="flex items-center gap-2 h-10 px-4 rounded-lg border-gray-200 hover:bg-gray-50 relative"
         >
-          <SlidersHorizontal className="w-4 h-4 text-[#8B5CF6]" />
+          <SlidersHorizontal className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-gray-900">Filter</span>
           {activeFiltersCount > 0 && (
             <Badge
               variant="default"
-              className="ml-1 h-5 min-w-5 px-1.5 bg-[#8B5CF6] text-white text-xs rounded-full"
+              className="ml-1 h-5 min-w-5 px-1.5 bg-primary text-white text-xs rounded-full"
             >
               {activeFiltersCount}
             </Badge>
@@ -42,7 +42,7 @@ export function MobileActionButtons() {
           variant="outline"
           className="flex items-center gap-2 h-10 px-4 rounded-lg border-gray-200 hover:bg-gray-50"
         >
-          <Sparkles className="w-4 h-4 text-[#8B5CF6]" />
+          <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-gray-900">
             Search Agent
           </span>
@@ -56,14 +56,14 @@ export function MobileActionButtons() {
         >
           {viewMode === "list" ? (
             <>
-              <MapIcon className="w-4 h-4 text-[#8B5CF6]" />
+              <MapIcon className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-gray-900">
                 Map View
               </span>
             </>
           ) : (
             <>
-              <List className="w-4 h-4 text-[#8B5CF6]" />
+              <List className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-gray-900">
                 List View
               </span>

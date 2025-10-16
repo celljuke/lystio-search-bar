@@ -153,7 +153,7 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
         </div>
 
         {/* Sort Dropdown - TODO: Implement */}
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        <button className="items-center flex gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white md:border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -167,7 +167,7 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
               d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
             />
           </svg>
-          Price (Low to high)
+          <span className="hidden md:inline">Price (Low to high)</span>
         </button>
       </div>
 

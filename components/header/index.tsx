@@ -2,7 +2,8 @@
 
 import { SearchBar, RentBuyToggle, MobileSearchModal } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
-import { Globe, User, Search, Menu } from "lucide-react";
+import { useLocationSelect } from "@/modules/search";
+import { Globe, User, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -11,8 +12,14 @@ export function Header() {
   const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy" | "ai">(
     "rent"
   );
-  const { isAnyPopoverOpen, exitSearchMode, isInSearchMode, openMobileSearch } =
-    useSearchStore();
+  const {
+    isAnyPopoverOpen,
+    exitSearchMode,
+    isInSearchMode,
+    openMobileSearch,
+    filters,
+  } = useSearchStore();
+  const { selectDefaultVienna } = useLocationSelect();
 
   return (
     <>
@@ -49,16 +56,44 @@ export function Header() {
               </a>
             </div>
 
-            {/* Search Bar Trigger */}
-            <button
-              onClick={openMobileSearch}
-              className="flex-1 flex items-center gap-3 h-12 px-4 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-            >
-              <Search className="w-5 h-5 text-gray-400" />
-              <span className="text-sm text-gray-400 text-left truncate">
-                City District, Street, Postcode
-              </span>
-            </button>
+            {/* Search Bar Trigger / Selected Location */}
+            {filters.location ? (
+              <div
+                onClick={openMobileSearch}
+                className="flex-1 flex items-center gap-2 h-12 px-3 bg-gray-50 border border-purple-100 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center flex-1">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 rounded-full flex-shrink-0">
+                    <span className="text-sm font-medium text-gray-900">
+                      {filters.location}
+                    </span>
+                    {filters.location.toLowerCase() !== "vienna" && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectDefaultVienna();
+                        }}
+                        className="flex-shrink-0 w-4 h-4 rounded-full bg-primary flex items-center justify-center hover:bg-[#7C3AED] transition-colors cursor-pointer"
+                        aria-label="Reset to Vienna"
+                      >
+                        <X className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Search className="w-5 h-5 text-gray-400" />
+              </div>
+            ) : (
+              <button
+                onClick={openMobileSearch}
+                className="flex-1 flex items-center gap-3 h-12 px-4 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                <Search className="w-5 h-5 text-gray-400" />
+                <span className="text-sm text-gray-400 text-left truncate">
+                  City District, Street, Postcode
+                </span>
+              </button>
+            )}
 
             {/* Menu Button */}
             <button

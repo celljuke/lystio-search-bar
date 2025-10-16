@@ -50,8 +50,11 @@ export function MobileSearchModal() {
   };
 
   const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
-    // This mimics what LocationSearchInput does internally
-    handleLocationSelect(suggestion.name);
+    // Use selectLocationWithBbox if we have the data, otherwise fallback
+    const locationName = suggestion.name;
+
+    // For now, just use the simple select which will handle bbox lookup
+    handleLocationSelect(locationName);
   };
 
   if (!isMobileSearchOpen) return null;
