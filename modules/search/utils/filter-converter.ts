@@ -1,52 +1,7 @@
 import type { SearchFilters, PropertyTypeFilter } from "../types";
 import type { SearchFilter } from "@/server/services/search/schema";
-import { $Enums } from "@/lib/generated/prisma";
-import { getBboxForLocation, getDefaultViennaBbox } from "./location-utils";
-
-/**
- * Maps frontend category IDs to backend property types and subtypes
- */
-const CATEGORY_TYPE_MAP: Record<
-  string,
-  {
-    type: $Enums.PropertyType[];
-    subType?: $Enums.PropertySubType[];
-  }
-> = {
-  apartments: {
-    type: ["APARTMENT"],
-    subType: ["APARTMENT", "PENTHOUSE", "MAISONETTE"],
-  },
-  houses: {
-    type: ["HOUSE"],
-    subType: [
-      "DETACHED_HOUSE",
-      "SEMI_DETACHED_HOUSE",
-      "TERRACED_HOUSE",
-      "VILLA",
-    ],
-  },
-  office: {
-    type: ["COMMERCIAL"],
-    subType: ["OFFICE"],
-  },
-  commercial: {
-    type: ["COMMERCIAL"],
-    subType: ["RETAIL", "WAREHOUSE", "OFFICE"],
-  },
-  plots: {
-    type: ["LAND"],
-    subType: ["BUILDING_LAND", "AGRICULTURAL_LAND", "FOREST_LAND"],
-  },
-  parking: {
-    type: ["OTHER"],
-    subType: ["GARAGE", "PARKING_SPACE"],
-  },
-  // Default for other categories
-  default: {
-    type: ["APARTMENT", "HOUSE", "COMMERCIAL", "LAND", "OTHER"],
-  },
-};
+import { getBboxForLocation } from "./location-utils";
+import { CATEGORIES } from "../constants/categories";
 
 /**
  * Convert frontend search filters to backend search filter format
@@ -58,8 +13,8 @@ export function convertCategoryToFilters(
   const backendFilter: SearchFilter = {
     active: true,
     listed: true,
-    // Set rent type based on mode
-    rentType: [rentBuyMode === "rent" ? "RENT" : "BUY"],
+    // Set rent type based on mode - use lowercase strings
+    rentType: [rentBuyMode === "rent" ? "rent" : "buy"],
     showPriceOnRequest: true, // Always show price on request properties
   };
 
@@ -78,16 +33,56 @@ export function convertCategoryToFilters(
     }
   }
 
-  // Property type filter
+  // Property type filter - use numeric IDs
   if (uiFilters.propertyType) {
     const categoryId = uiFilters.propertyType.categoryId;
-    const typeMapping =
-      CATEGORY_TYPE_MAP[categoryId] || CATEGORY_TYPE_MAP.default;
+    const category = CATEGORIES.find((cat) => cat.id === categoryId);
 
-    backendFilter.type = typeMapping.type;
+    if (category && category.typeId !== undefined) {
+      // Set the type ID
+      backendFilter.type = [category.typeId];
 
-    if (typeMapping.subType) {
-      backendFilter.subType = typeMapping.subType;
+      // Set subType IDs based on selected subcategories
+      const selectedSubcategories = uiFilters.propertyType.subcategories;
+
+      if (
+        category.hasSubcategories &&
+        category.subcategories &&
+        selectedSubcategories.length > 0
+      ) {
+        // If "all" is selected or no specific subcategories, include all subtype IDs
+        if (selectedSubcategories.includes("all")) {
+          // Get all subtype IDs from the category
+          const allSubTypeIds = category.subcategories
+            .filter((sub) => sub.id !== "all" && sub.subTypeId !== undefined)
+            .map((sub) => sub.subTypeId as number);
+
+          if (allSubTypeIds.length > 0) {
+            backendFilter.subType = allSubTypeIds;
+          }
+        } else {
+          // Get specific subtype IDs for selected subcategories
+          const subTypeIds = selectedSubcategories
+            .map((subId) => {
+              const sub = category.subcategories?.find((s) => s.id === subId);
+              return sub?.subTypeId;
+            })
+            .filter((id): id is number => id !== undefined);
+
+          if (subTypeIds.length > 0) {
+            backendFilter.subType = subTypeIds;
+          }
+        }
+      } else if (!category.hasSubcategories && category.subcategories) {
+        // For categories without subcategories UI but with subtype IDs defined
+        const subTypeIds = category.subcategories
+          .filter((sub) => sub.subTypeId !== undefined)
+          .map((sub) => sub.subTypeId as number);
+
+        if (subTypeIds.length > 0) {
+          backendFilter.subType = subTypeIds;
+        }
+      }
     }
   }
 

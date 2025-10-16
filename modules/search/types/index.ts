@@ -39,6 +39,7 @@ export interface Subcategory {
   id: string;
   name: string;
   count: number;
+  subTypeId?: number; // Numeric ID for backend filtering
 }
 
 export interface Category {
@@ -46,6 +47,7 @@ export interface Category {
   name: string;
   icon: React.ElementType;
   count: number;
+  typeId?: number; // Numeric ID for backend filtering
   hasSubcategories?: boolean;
   subcategories?: Subcategory[];
 }
