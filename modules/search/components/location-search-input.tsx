@@ -21,6 +21,11 @@ if (typeof window !== "undefined") {
 interface LocationSearchInputProps {
   value: string; // Comma-separated string of locations
   onSelect: (location: string) => void;
+  onSelectWithBbox?: (
+    locationName: string,
+    bbox: [[number, number], [number, number]],
+    center?: { lng: number; lat: number }
+  ) => void;
   onFocus?: () => void;
   placeholder?: string;
   className?: string;
@@ -37,6 +42,7 @@ interface SearchSuggestion {
 export function LocationSearchInput({
   value,
   onSelect,
+  onSelectWithBbox,
   onFocus,
   placeholder = "Find a location, street, region or zip",
   className = "",
@@ -113,7 +119,7 @@ export function LocationSearchInput({
     return () => clearTimeout(debounceTimer);
   }, [inputValue, searchBoxCore, sessionToken]);
 
-  const handleSelect = (suggestion: SearchSuggestion) => {
+  const handleSelect = async (suggestion: SearchSuggestion) => {
     const locationName = suggestion.name;
 
     // Check if already selected
@@ -132,12 +138,73 @@ export function LocationSearchInput({
       return;
     }
 
+    // Retrieve full location data with bbox if onSelectWithBbox is provided
+    if (onSelectWithBbox && searchBoxCore) {
+      try {
+        const retrieveResponse = await searchBoxCore.retrieve(suggestion, {
+          sessionToken,
+        });
+
+        if (retrieveResponse?.features?.[0]) {
+          const feature = retrieveResponse.features[0];
+          const geometry = feature.geometry;
+          const properties = feature.properties;
+
+          // Extract bbox from feature
+          let bbox: [[number, number], [number, number]] | null = null;
+          let center: { lng: number; lat: number } | undefined;
+
+          // Get bbox from properties or geometry
+          if (properties.bbox) {
+            // bbox format: [minLng, minLat, maxLng, maxLat]
+            bbox = [
+              [properties.bbox[0], properties.bbox[1]],
+              [properties.bbox[2], properties.bbox[3]],
+            ];
+          } else if (geometry.type === "Point") {
+            // For points, create a small bbox around the point
+            const [lng, lat] = geometry.coordinates;
+            const offset = 0.01; // ~1km
+            bbox = [
+              [lng - offset, lat - offset],
+              [lng + offset, lat + offset],
+            ];
+          }
+
+          // Get center from geometry
+          if (geometry.type === "Point") {
+            center = {
+              lng: geometry.coordinates[0],
+              lat: geometry.coordinates[1],
+            };
+          } else if (properties.coordinates) {
+            center = {
+              lng: properties.coordinates.longitude,
+              lat: properties.coordinates.latitude,
+            };
+          }
+
+          // Call onSelectWithBbox with the location data
+          if (bbox) {
+            onSelectWithBbox(locationName, bbox, center);
+          } else {
+            // Fallback to regular onSelect if no bbox
+            onSelect(locationName);
+          }
+        }
+      } catch (error) {
+        console.error("Error retrieving location data:", error);
+        // Fallback to regular onSelect
+        onSelect(locationName);
+      }
+    } else {
+      // No bbox callback, use regular onSelect
+      onSelect(locationName);
+    }
+
     // Add to selected locations
     const newLocations = [...selectedLocations, locationName];
     setSelectedLocations(newLocations);
-
-    // Update parent with comma-separated string
-    onSelect(newLocations.join(", "));
 
     // Clear input
     setInputValue("");

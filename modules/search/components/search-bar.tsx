@@ -60,10 +60,21 @@ export function SearchBar({
   }, [openPopover, closeDropdown]);
 
   const { isInSearchMode } = useSearchStore();
+  const { selectLocationWithBbox } = useLocationSelect();
 
   const handleLocationSelect = (location: string) => {
     // Use the location select hook to set location with bbox
     selectLocation(location);
+    closeDropdown();
+  };
+
+  const handleLocationSelectWithBbox = (
+    locationName: string,
+    bbox: [[number, number], [number, number]],
+    center?: { lng: number; lat: number }
+  ) => {
+    // Use the location select hook with bbox data from Mapbox
+    selectLocationWithBbox(locationName, bbox, center);
     closeDropdown();
   };
 
@@ -126,6 +137,7 @@ export function SearchBar({
               <LocationSearchInput
                 value={filters.location}
                 onSelect={handleLocationSelect}
+                onSelectWithBbox={handleLocationSelectWithBbox}
                 placeholder="Find a location, street, region or zip"
                 showPopover={isOpen("location")}
               />
