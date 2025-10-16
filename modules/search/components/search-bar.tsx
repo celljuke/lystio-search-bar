@@ -132,15 +132,24 @@ export function SearchBar({
             description="City District, Street, Postcode"
             value={filters.location}
             descriptionColor="gray"
-            disableClick={isInSearchMode}
+            disableClick={false}
             renderDescription={() => (
-              <LocationSearchInput
-                value={filters.location}
-                onSelect={handleLocationSelect}
-                onSelectWithBbox={handleLocationSelectWithBbox}
-                placeholder="Find a location, street, region or zip"
-                showPopover={isOpen("location")}
-              />
+              <div
+                onClick={(e) => {
+                  // Only stop propagation if the popover is open and user is clicking inside the input
+                  if (isOpen("location")) {
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                <LocationSearchInput
+                  value={filters.location}
+                  onSelect={handleLocationSelect}
+                  onSelectWithBbox={handleLocationSelectWithBbox}
+                  placeholder="Find a location, street, region or zip"
+                  showPopover={isOpen("location")}
+                />
+              </div>
             )}
           >
             {/* Show location popover when opened and user hasn't started typing */}
