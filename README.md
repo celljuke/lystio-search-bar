@@ -1,398 +1,199 @@
-# 🏠 Lystio Search Bar
+# Lystio Search Bar
 
-A modern, full-featured property search application built with Next.js 15, featuring advanced search capabilities, interactive maps, and a beautiful responsive UI.
-
-![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=flat-square&logo=next.js)
-![React](https://img.shields.io/badge/React-19.1-blue?style=flat-square&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
-![Prisma](https://img.shields.io/badge/Prisma-6.17-2D3748?style=flat-square&logo=prisma)
-![tRPC](https://img.shields.io/badge/tRPC-11.6-2596BE?style=flat-square&logo=trpc)
+A modern, feature-rich property search interface built with Next.js 15, featuring real-time search, interactive maps, and smooth animations.
 
 ## ✨ Features
 
-### 🔍 Advanced Search
+- 🔍 **Advanced Search** - Multi-filter search with location, category, and price
+- 🗺️ **Interactive Maps** - Mapbox integration with property markers and clustering
+- 🎨 **Beautiful UI** - Smooth animations with Framer Motion
+- 📊 **Dynamic Filtering** - Real-time price histograms and filter updates
+- 🌍 **Location Search** - City selection with district information
+- 🎯 **Type-Safe** - Full TypeScript and tRPC integration
+- 🚀 **External API** - Powered by Lystio REST API (no local database needed)
 
-- **Smart Location Search** - Powered by Mapbox with autocomplete and bbox filtering
-- **Category Filters** - 11 property categories with detailed subcategories
-- **Price Range** - Interactive slider with histogram visualization
-- **Map Integration** - Interactive Mapbox GL map with property clustering
-- **Real-time Results** - Instant property filtering via Lystio API with tRPC
-- **External API Integration** - Fetches live property data from Lystio API
+## 🛠️ Tech Stack
 
-### 📱 Responsive Design
-
-- **Mobile-First** - Fully optimized mobile experience with custom search modal
-- **Desktop-Optimized** - Rich desktop interface with expandable search bar
-- **Accessibility** - WCAG compliant with keyboard navigation and ARIA labels
-
-### 🎨 Modern UI/UX
-
-- **shadcn/ui Components** - Beautiful, accessible components
-- **Smooth Animations** - Motion-powered transitions
-- **Dark Mode Ready** - Theme support with next-themes
-- **Pixel-Perfect** - Carefully crafted design matching Figma specs
-
-### 🏗️ Architecture
-
-- **Module-Based** - Clean separation of concerns with feature modules
-- **Type-Safe** - End-to-end type safety with tRPC and Zod
-- **Performant** - Virtual scrolling, optimistic updates, and smart caching
-- **API-Driven** - Integrates with external Lystio API for property data
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript (strict mode)
+- **API**: tRPC for type-safe API layer
+- **External API**: Lystio REST API
+- **Validation**: Zod schemas
+- **UI**: Tailwind CSS + Radix UI + shadcn/ui
+- **Animations**: Framer Motion
+- **Maps**: Mapbox GL JS
+- **State**: Zustand
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** 20+ and npm
-- **Mapbox Access Token** (for map features)
-- **Internet Connection** (for Lystio API access)
+- Node.js 18+
+- npm or yarn
+- Mapbox Access Token (for maps)
 
-### 1. Clone the Repository
+### Installation
+
+1. **Clone the repository**
 
 ```bash
 git clone <repository-url>
 cd lystio-search-bar
 ```
 
-### 2. Install Dependencies
+2. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-### 3. Set Up Environment Variables
+3. **Set up environment variables**
 
 Create a `.env.local` file in the root directory:
 
 ```env
-# Database Configuration (Optional - used for development only)
-DATABASE_URL="postgresql://lystio_user:lystio_password@localhost:5433/lystio?schema=public"
-DATABASE_URL_UNPOOLED="postgresql://lystio_user:lystio_password@localhost:5433/lystio?schema=public"
+# Mapbox (required for maps)
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
 
-# Mapbox (Required for map features)
-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN="your_mapbox_access_token_here"
-
-# Lystio API (Required for property data)
-LYSTIO_API_URL="https://api.lystio.co"
+# Lystio API (optional - defaults to https://api.lystio.co)
+LYSTIO_API_URL=https://api.lystio.co
 ```
 
-> **Get a Mapbox Token**: Sign up at [mapbox.com](https://account.mapbox.com/) and create an access token.
->
-> **Lystio API**: The application fetches property data from the Lystio API. See [API_INTEGRATION.md](./API_INTEGRATION.md) for details.
+**Get your Mapbox token:**
 
-### 4. Start Development Server
+- Sign up at [mapbox.com](https://www.mapbox.com/)
+- Go to [Account > Access Tokens](https://account.mapbox.com/access-tokens/)
+- Copy your default public token or create a new one
+
+4. **Run the development server**
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) 🎉
+5. **Open your browser**
 
-## 📦 Project Structure
+```
+http://localhost:3001
+```
+
+That's it! 🎉 No database setup required.
+
+## 📁 Project Structure
 
 ```
 lystio-search-bar/
-├── app/                          # Next.js App Router
-│   ├── api/trpc/                 # tRPC API routes
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Home page
-├── components/                   # Shared components
-│   ├── header/                   # Header with navigation
-│   │   ├── header-actions.tsx    # User menu, favorites, create listing
-│   │   ├── header-logo.tsx       # Logo component
-│   │   ├── mobile-header.tsx     # Mobile header layout
-│   │   └── desktop-search-area.tsx
-│   ├── map/                      # Mapbox GL integration
-│   └── ui/                       # shadcn/ui components
-├── modules/                      # Feature modules
-│   └── search/                   # Search feature
-│       ├── components/           # Search-specific UI
-│       ├── hooks/                # Custom React hooks
-│       ├── schemas/              # Zod validation schemas
-│       ├── store.ts              # Zustand state management
-│       ├── types/                # TypeScript types
-│       └── utils/                # Helper functions
-├── server/                       # Backend logic
-│   ├── api/                      # tRPC routers and context
-│   └── services/                 # Business logic
-│       └── search/               # Search service
-├── prisma/                       # Database
-│   ├── schema.prisma             # Database schema
-│   └── seed.ts                   # Seed data
-├── lib/                          # Utilities
-│   ├── generated/prisma/         # Generated Prisma client
-│   ├── trpc/                     # tRPC setup
-│   └── utils.ts                  # Helper functions
-└── scripts/                      # Automation scripts
-    └── setup-db.sh               # Database setup script
+├── app/                      # Next.js App Router
+│   ├── page.tsx             # Home page
+│   └── layout.tsx           # Root layout
+├── components/              # Shared components
+│   ├── map/                 # Map components
+│   └── ui/                  # UI primitives (shadcn)
+├── modules/                 # Feature modules
+│   └── search/              # Search feature
+│       ├── components/      # Search UI components
+│       ├── hooks/           # Custom hooks
+│       ├── schemas/         # Zod schemas
+│       ├── utils/           # Utilities
+│       └── store.ts         # Zustand state
+├── server/                  # tRPC backend
+│   ├── api/                 # API routes
+│   │   ├── routers/         # tRPC routers
+│   │   └── trpc.ts          # tRPC setup
+│   └── services/            # Business logic
+│       ├── search/          # Search service
+│       └── location/        # Location service
+├── lib/                     # Shared utilities
+│   ├── trpc/               # tRPC client setup
+│   ├── config.ts           # App configuration
+│   └── utils.ts            # Helper functions
+└── public/                  # Static assets
+    └── images/              # Images
 ```
 
-## 🛠️ Available Scripts
+## 🎯 Key Features
 
-### Development
+### Search System
+
+- Multi-filter search (location, category, price)
+- Real-time search results
+- Price range with histogram visualization
+- Rent/Buy mode toggle
+- Category and subcategory selection
+
+### Map Integration
+
+- Interactive property markers
+- Airbnb-style marker design
+- Property popups with images
+- Click markers to view details
+- Smooth animations and transitions
+
+### Location Features
+
+- City selection with images
+- District information
+- Boundary-based filtering
+- Dynamic location search
+
+### UI/UX
+
+- Smooth Framer Motion animations
+- Responsive design (mobile + desktop)
+- Airbnb-inspired search bar
+- Loading states and skeletons
+- Error handling
+
+## 🔧 Available Scripts
 
 ```bash
-npm run dev          # Start development server with Turbopack
+# Development
+npm run dev          # Start dev server with Turbopack
+
+# Production
 npm run build        # Build for production
 npm run start        # Start production server
 ```
 
-### Database Management
+## 🌐 API Integration
 
-```bash
-npm run db:setup     # 🚀 Complete database setup (recommended)
-npm run db:start     # Start PostgreSQL container
-npm run db:stop      # Stop PostgreSQL container
-npm run db:restart   # Restart PostgreSQL container
-npm run db:logs      # View database logs
+This project uses the external Lystio API:
 
-npm run db:generate  # Generate Prisma client
-npm run db:push      # Push schema to database (no migration)
-npm run db:migrate   # Create and run migration
-npm run db:studio    # Open Prisma Studio (database GUI)
-npm run db:reset     # Reset database (⚠️ deletes all data)
-npm run db:seed      # Seed database with sample data
-```
+**Base URL:** `https://api.lystio.co`
 
-### Database Access
+**Key Endpoints:**
 
-**Prisma Studio** (Recommended):
+- `POST /tenement/search` - Search properties
+- `POST /tenement/search/histogram` - Get price histogram
+- `GET /geo/boundary/popular` - Get popular locations
+- `POST /geo/boundary` - Get location boundaries
 
-```bash
-npm run db:studio
-```
+No authentication required for these public endpoints.
 
-Opens at [http://localhost:5555](http://localhost:5555)
+## 📝 Environment Variables
 
-**PostgreSQL Client**:
+| Variable                          | Description               | Required | Default                 |
+| --------------------------------- | ------------------------- | -------- | ----------------------- |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox API token for maps | ✅ Yes   | -                       |
+| `LYSTIO_API_URL`                  | Lystio API base URL       | ❌ No    | `https://api.lystio.co` |
 
-```bash
-docker exec -it lystio-db psql -U lystio_user -d lystio
-```
+## 🎨 Customization
 
-**Connection Details**:
+### Brand Colors
 
-- Host: `localhost`
-- Port: `5433`
-- Database: `lystio`
-- Username: `lystio_user`
-- Password: `lystio_password`
+The app uses a purple theme (`#A540F3`). To customize:
 
-## 🏛️ Tech Stack
+- Update colors in `tailwind.config.ts`
+- Search for `#A540F3` and replace
 
-### Frontend
+### Map Style
 
-- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
-- **[React 19](https://react.dev/)** - UI library
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first CSS
-- **[shadcn/ui](https://ui.shadcn.com/)** - Component library
-- **[Lucide Icons](https://lucide.dev/)** - Icon library
+To change the Mapbox style:
 
-### State Management & Data Fetching
-
-- **[tRPC](https://trpc.io/)** - End-to-end type-safe APIs
-- **[TanStack Query](https://tanstack.com/query)** - Server state management
-- **[Zustand](https://zustand-demo.pmnd.rs/)** - Client state management
-- **[Zod](https://zod.dev/)** - Runtime validation
-
-### Database & ORM
-
-- **[PostgreSQL 16](https://www.postgresql.org/)** - Relational database
-- **[Prisma](https://www.prisma.io/)** - Type-safe ORM
-- **[Docker](https://www.docker.com/)** - Containerization
-
-### Maps & Geolocation
-
-- **[Mapbox GL](https://www.mapbox.com/)** - Interactive maps
-- **[@mapbox/search-js-react](https://www.npmjs.com/package/@mapbox/search-js-react)** - Location search
-
-### Additional Tools
-
-- **[Motion](https://motion.dev/)** - Animation library
-- **[date-fns](https://date-fns.org/)** - Date utilities
-- **[Virtua](https://github.com/inokawa/virtua)** - Virtual scrolling
-
-## 🎨 Key Features Explained
-
-### Smart Search System
-
-**Location Search**:
-
-- Mapbox-powered autocomplete with bbox filtering
-- Predefined city shortcuts (Vienna, Graz, Salzburg, etc.)
-- Geographic boundary-based property filtering
-- Mobile-optimized search modal
-
-**Category Filtering**:
-
-- 11 main categories (Apartments, Houses, Commercial, etc.)
-- 70+ subcategories with individual IDs
-- Numeric ID-based backend filtering for performance
-- "Select All" functionality for subcategories
-
-**Price Range**:
-
-- Interactive dual-handle slider
-- Visual histogram showing property distribution
-- Separate ranges for rent and buy modes
-- Dynamic price formatting
-
-### Module Architecture
-
-Each feature is a self-contained module:
-
-```typescript
-modules/search/
-├── components/    # UI components
-├── hooks/         # Custom hooks (usePropertySearch, useCategory)
-├── schemas/       # Zod validation schemas
-├── services/      # Business logic
-├── store.ts       # Zustand store
-├── types/         # TypeScript interfaces
-└── utils/         # Helper functions (filter-converter, location-utils)
-```
-
-This structure ensures:
-
-- ✅ Clear separation of concerns
-- ✅ Easy testing and maintenance
-- ✅ Reusable components
-- ✅ Type safety across layers
-
-### tRPC Integration
-
-End-to-end type safety from database to UI:
-
-```typescript
-// Server: Define type-safe API
-export const searchRouter = router({
-  search: publicProcedure.input(searchInputSchema).query(async ({ input }) => {
-    return searchService.search(input);
-  }),
-});
-
-// Client: Type-safe consumption
-const { data } = trpc.search.search.useQuery({
-  filter: { type: [2], subType: [46, 47] },
-  paging: { page: 1, pageSize: 26 },
-});
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable                          | Description                  | Required    |
-| --------------------------------- | ---------------------------- | ----------- |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox API token             | ✅ Yes      |
-| `LYSTIO_API_URL`                  | Lystio API endpoint          | ✅ Yes      |
-| `DATABASE_URL`                    | PostgreSQL connection string | ⚠️ Optional |
-| `DATABASE_URL_UNPOOLED`           | Direct database connection   | ⚠️ Optional |
-
-> **Note**: Database variables are optional and only needed for local development/testing.
-
-### Lystio API Configuration
-
-Update `lib/config.ts` for API settings:
-
-```typescript
-export const config = {
-  lystio: {
-    apiUrl: process.env.LYSTIO_API_URL || "https://api.lystio.co",
-  },
-};
-```
-
-See [API_INTEGRATION.md](./API_INTEGRATION.md) for detailed API documentation.
-
-### Mapbox Configuration
-
-Update `lib/config.ts` for Mapbox settings:
-
-```typescript
-export const config = {
-  mapbox: {
-    accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "",
-  },
-};
-```
-
-## 🐛 Troubleshooting
-
-### Database Connection Issues
-
-**Problem**: `Error: P1001: Can't reach database server`
-
-```bash
-# Check if Docker is running
-docker ps
-
-# Check database logs
-npm run db:logs
-
-# Restart database
-npm run db:restart
-```
-
-### Prisma Client Issues
-
-**Problem**: `PrismaClient is unable to run in this browser environment`
-
-```bash
-# Regenerate Prisma client
-npm run db:generate
-
-# If still failing, delete and regenerate
-rm -rf lib/generated/prisma node_modules/.prisma
-npm install
-```
-
-### Mapbox Not Loading
-
-**Problem**: Map tiles not displaying
-
-1. Verify your Mapbox token in `.env.local`
-2. Check browser console for 401 errors
-3. Ensure token has proper scopes (Styles API, Geocoding API)
-4. Restart dev server after adding token
-
-### Port Already in Use
-
-**Problem**: Port 5433 already in use
-
-```bash
-# Option 1: Change port in docker-compose.yml
-ports:
-  - "5434:5432"  # Use different port
-
-# Option 2: Stop existing process
-lsof -ti:5433 | xargs kill -9
-```
-
-## 📚 Learn More
-
-### Next.js
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [Learn Next.js](https://nextjs.org/learn)
-
-### Database & APIs
-
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [tRPC Documentation](https://trpc.io/docs)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-
-### UI Libraries
-
-- [shadcn/ui Components](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [Radix UI Primitives](https://www.radix-ui.com/)
+- Edit `components/map/index.tsx`
+- Update the `style` property in the Map initialization
 
 ## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -400,17 +201,13 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is private and proprietary.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- [Vercel](https://vercel.com) for Next.js
-- [Mapbox](https://www.mapbox.com) for mapping services
-- [Prisma](https://www.prisma.io) for database tooling
-- [shadcn](https://ui.shadcn.com) for beautiful components
-
----
-
-Built with ❤️ using [Next.js](https://nextjs.org) and [TypeScript](https://www.typescriptlang.org)
+- Lystio API for property data
+- Mapbox for mapping services
+- shadcn/ui for UI components
+- Framer Motion for animations
