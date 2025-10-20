@@ -3,6 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { PropertyMarker } from "./property-marker";
+import { PropertyPopup } from "./property-popup";
+
+export interface Property {
+  id: number;
+  location: [number, number]; // [lng, lat]
+  rent: number;
+  rentPer?: [number | null, number | null];
+  title?: string;
+  address?: string;
+  city?: string;
+  size?: number | null;
+  rooms?: number | null;
+  media?: Array<{ type: string; cdnUrl: string }>;
+}
 
 interface MapProps {
   accessToken: string;
@@ -10,6 +25,8 @@ interface MapProps {
   initialZoom?: number;
   className?: string;
   bbox?: [[number, number], [number, number]]; // [[minLng, minLat], [maxLng, maxLat]]
+  properties?: Property[];
+  onPropertyClick?: (property: Property) => void;
 }
 
 export function Map({
@@ -18,10 +35,15 @@ export function Map({
   initialZoom = 11,
   className = "",
   bbox,
+  properties = [],
+  onPropertyClick,
 }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null
+  );
 
   // Initialize map only once
   useEffect(() => {
@@ -91,9 +113,75 @@ export function Map({
     });
   }, [bbox, mapLoaded]);
 
+  // Close popup when clicking on map
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const mapInstance = map.current;
+
+    const handleMapClick = () => {
+      setSelectedProperty(null);
+    };
+
+    mapInstance.on("click", handleMapClick);
+
+    return () => {
+      mapInstance.off("click", handleMapClick);
+    };
+  }, [mapLoaded]);
+
+  // Handle property marker click
+  const handlePropertyClick = (property: Property) => {
+    setSelectedProperty(property);
+    if (onPropertyClick) {
+      onPropertyClick(property);
+    }
+  };
+
+  // Handle popup close
+  const handlePopupClose = () => {
+    setSelectedProperty(null);
+  };
+
   return (
     <div className={className}>
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Render property markers */}
+      {mapLoaded &&
+        map.current &&
+        properties.map((property) => (
+          <PropertyMarker
+            key={property.id}
+            id={property.id}
+            location={property.location}
+            price={property.rent}
+            isSelected={selectedProperty?.id === property.id}
+            onClick={() => handlePropertyClick(property)}
+            map={map.current!}
+          />
+        ))}
+
+      {/* Render property popup */}
+      {mapLoaded && map.current && (
+        <PropertyPopup
+          property={selectedProperty}
+          map={map.current}
+          onClose={handlePopupClose}
+        />
+      )}
+
+      {/* Global popup styles */}
+      <style jsx global>{`
+        .mapboxgl-popup-content {
+          padding: 12px !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .mapboxgl-popup-tip {
+          border-top-color: white !important;
+        }
+      `}</style>
     </div>
   );
 }

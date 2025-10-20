@@ -6,6 +6,7 @@ import {
   PropertyList,
   MobileActionButtons,
   useHistogram,
+  usePropertySearch,
 } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
 
@@ -17,6 +18,23 @@ export default function Home() {
 
   // Get bbox from location filter
   const bbox = filters.locationData?.bbox;
+
+  // Get properties from search hook
+  const { properties } = usePropertySearch();
+
+  // Convert properties to map format
+  const mapProperties = properties.map((property: any) => ({
+    id: property.id,
+    location: property.location as [number, number],
+    rent: property.rent || 0,
+    rentPer: property.rentPer,
+    title: property.title,
+    address: property.address,
+    city: property.city,
+    size: property.size,
+    rooms: property.rooms,
+    media: property.media,
+  }));
 
   return (
     <>
@@ -35,6 +53,7 @@ export default function Home() {
             initialCenter={[16.3738, 48.2082]} // Vienna, Austria
             initialZoom={11}
             bbox={bbox}
+            properties={mapProperties}
             className="w-full h-full"
           />
         </div>
@@ -46,6 +65,7 @@ export default function Home() {
             initialCenter={[16.3738, 48.2082]} // Vienna, Austria
             initialZoom={11}
             bbox={bbox}
+            properties={mapProperties}
             className="w-full h-full"
           />
         </div>
