@@ -2,7 +2,6 @@
 
 import { MobileSearchModal, useRentBuyMode } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
-import { useLocationSelect } from "@/modules/search";
 import { cn } from "@/lib/utils";
 import { HeaderActions } from "./header-actions";
 import { HeaderLogo } from "./header-logo";
@@ -28,8 +27,8 @@ export function Header() {
     isInSearchMode,
     openMobileSearch,
     filters,
+    resetFilters,
   } = useSearchStore();
-  const { selectDefaultVienna } = useLocationSelect();
 
   const handleCreateListing = () => {
     console.log("Create listing clicked");
@@ -39,6 +38,11 @@ export function Header() {
   const handleSignOut = () => {
     console.log("Sign out clicked");
     // Add your sign out logic here
+  };
+
+  const handleLocationReset = () => {
+    // Just clear the location filter
+    resetFilters();
   };
 
   return (
@@ -65,7 +69,7 @@ export function Header() {
           <MobileHeader
             location={filters.location}
             onSearchClick={openMobileSearch}
-            onLocationReset={selectDefaultVienna}
+            onLocationReset={handleLocationReset}
           />
 
           {/* Desktop Layout */}

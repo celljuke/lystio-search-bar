@@ -50,13 +50,11 @@ export function usePropertySearch() {
   }, [filters, rentBuyMode, currentPage]);
 
   // Execute search query with tRPC
-  // Enable search if location is set OR if we have locationData with bbox
-  const hasLocation = Boolean(filters.location || filters.locationData?.bbox);
-
+  // Always enable search - location is optional
   const { data, isLoading, error, isFetching } = trpc.search.search.useQuery(
     searchInput,
     {
-      enabled: hasLocation, // Only search when location is set
+      enabled: true, // Always search, location is optional
       refetchOnWindowFocus: false,
       staleTime: 30000, // Consider data fresh for 30 seconds
     }
@@ -117,6 +115,6 @@ export function usePropertySearch() {
     loadMore,
     hasNextPage,
     isFetchingNextPage: isFetching && currentPage > 1,
-    isSearchActive: isInSearchMode && Boolean(filters.location),
+    isSearchActive: isInSearchMode,
   };
 }

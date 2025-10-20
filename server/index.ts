@@ -21,6 +21,18 @@ export {
   type LystioApiPaging,
 } from "./services/search/index.export";
 
+// Location service exports
+export {
+  locationService,
+  type LocationService,
+  type PopularLocation,
+  type LocationChild,
+  type PopularLocationsResponse,
+  type BoundaryRequest,
+  type BoundaryResponse,
+  type BoundaryResponseItem,
+} from "./services/location/index.export";
+
 // Schemas
 export {
   searchInputSchema,
@@ -32,3 +44,12 @@ export {
   lystioApiSortSchema,
   lystioApiPagingSchema,
 } from "./services/search/schema";
+
+export {
+  popularLocationSchema,
+  locationChildSchema,
+  popularLocationsResponseSchema,
+  boundaryRequestSchema,
+  boundaryResponseSchema,
+  boundaryResponseItemSchema,
+} from "./services/location/schema";

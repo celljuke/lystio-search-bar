@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { Virtualizer } from "virtua";
 import { PropertyCard } from "./property-card";
 import { usePropertySearch } from "../hooks/use-property-search";
+import { useSearchStore } from "../store";
+import { useRentBuyMode } from "../hooks/use-rent-buy-mode";
 import { Loader2 } from "lucide-react";
 
 interface PropertyListProps {
@@ -20,6 +22,10 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
     hasNextPage,
     isFetchingNextPage,
   } = usePropertySearch();
+
+  // Get location from filters for dynamic header
+  const { filters } = useSearchStore();
+  const { mode: rentBuyMode } = useRentBuyMode();
 
   const scrollParentRef = useRef<HTMLElement | null>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
@@ -136,15 +142,28 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
     });
   }
 
+  // Get display location name from filters
+  const locationName = filters.locationData?.name || filters.location;
+
+  // Get category name for display
+  const categoryName = filters.propertyType?.categoryName || "Apartments";
+
+  // Get rent/buy text
+  const rentBuyText = rentBuyMode === "buy" ? "to Buy" : "to Rent";
+
+  // Determine header text based on location
+  const headerText = locationName
+    ? `${pagination?.total || 0} Listing${
+        pagination?.total !== 1 ? "s" : ""
+      } in ${locationName}`
+    : `${pagination?.total || 0} ${categoryName} ${rentBuyText}`;
+
   return (
     <div className="p-6">
       {/* Results Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {pagination?.total || 0} Listing
-            {pagination?.total !== 1 ? "s" : ""} in Vienna
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900">{headerText}</h2>
           {pagination && (
             <p className="text-sm text-gray-600 mt-1">
               Showing {properties.length} of {pagination.total} properties

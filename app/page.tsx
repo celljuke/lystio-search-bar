@@ -1,23 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { Map } from "@/components/map";
 import { config } from "@/lib/config";
-import {
-  PropertyList,
-  useLocationSelect,
-  MobileActionButtons,
-} from "@/modules/search";
+import { PropertyList, MobileActionButtons } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
 
 export default function Home() {
-  const { selectDefaultVienna } = useLocationSelect();
   const { viewMode } = useSearchStore();
-
-  // Initialize with default Vienna location on mount
-  useEffect(() => {
-    selectDefaultVienna();
-  }, [selectDefaultVienna]);
 
   return (
     <>
