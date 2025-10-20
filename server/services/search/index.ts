@@ -1,517 +1,211 @@
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/lib/generated/prisma";
-import type { SearchInput, SearchFilter, SearchSort } from "./schema";
-import {
-  convertPropertyTypes,
-  convertPropertySubTypes,
-  convertRentTypes,
-} from "./types";
+import { config } from "@/lib/config";
+import type {
+  SearchInput,
+  SearchFilter,
+  SearchSort,
+  LystioApiRequest,
+  LystioApiFilter,
+  LystioApiSort,
+  SearchPaging,
+} from "./schema";
+
+/**
+ * Response structure from Lystio API
+ */
+interface LystioApiResponse {
+  res: any[]; // Array of property results
+  paging: {
+    pageCount: number;
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    allTotalCount: number;
+  };
+}
 
 export class SearchService {
+  private readonly apiUrl = config.lystio.apiUrl;
+
   /**
-   * Main search method for properties
+   * Main search method that calls the Lystio API
    */
   async search(input: SearchInput) {
     const { filter, sort, paging } = input;
 
-    // Build the where clause
-    const where = this.buildWhereClause(filter);
+    // Convert our filter/sort/paging to Lystio API format
+    const apiRequest = this.buildLystioApiRequest(filter, sort, paging);
 
-    // Build the orderBy clause
-    const orderBy = this.buildOrderByClause(filter, sort);
-
-    // Calculate pagination
-    const skip = (paging.page - 1) * paging.pageSize;
-    const take = paging.pageSize;
-
-    // If bbox filter is present, use raw SQL for location filtering
-    if (filter.bbox) {
-      return this.searchWithBbox(filter, where, orderBy, skip, take, paging);
-    }
-
-    // Execute query with pagination
-    const [properties, total] = await Promise.all([
-      prisma.property.findMany({
-        where,
-        orderBy,
-        skip,
-        take,
-        include: {
-          media: {
-            where: {
-              type: "PHOTO",
-            },
-            orderBy: {
-              createdAt: "asc",
-            },
-            take: 1,
-          },
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              imageUrl: true,
-              logoColor: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              imageUrl: true,
-            },
-          },
-          amenities: {
-            include: {
-              amenity: true,
-            },
-          },
-          spaces: true,
-          energy: true,
+    try {
+      // Call the Lystio API
+      const response = await fetch(`${this.apiUrl}/tenement/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      }),
-      prisma.property.count({ where }),
-    ]);
+        body: JSON.stringify(apiRequest),
+      });
 
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / paging.pageSize);
-    const hasNextPage = paging.page < totalPages;
-    const hasPreviousPage = paging.page > 1;
+      if (!response.ok) {
+        throw new Error(
+          `Lystio API error: ${response.status} ${response.statusText}`
+        );
+      }
 
-    return {
-      properties,
-      pagination: {
-        page: paging.page,
-        pageSize: paging.pageSize,
-        total,
-        totalPages,
-        hasNextPage,
-        hasPreviousPage,
-      },
-    };
+      const data: LystioApiResponse = await response.json();
+
+      // Transform the response to our format
+      return {
+        properties: data.res,
+        pagination: {
+          page: data.paging.page,
+          pageSize: data.paging.pageSize,
+          total: data.paging.totalCount,
+          totalPages: data.paging.pageCount,
+          hasNextPage: data.paging.page < data.paging.pageCount,
+          hasPreviousPage: data.paging.page > 1,
+          allTotalCount: data.paging.allTotalCount,
+        },
+      };
+    } catch (error) {
+      console.error("Error calling Lystio API:", error);
+      throw error;
+    }
   }
 
   /**
-   * Search with bbox using raw SQL for location array filtering
+   * Build Lystio API request from our filter/sort/paging
    */
-  private async searchWithBbox(
+  private buildLystioApiRequest(
     filter: SearchFilter,
-    where: Prisma.PropertyWhereInput,
-    orderBy:
-      | Prisma.PropertyOrderByWithRelationInput
-      | Prisma.PropertyOrderByWithRelationInput[],
-    skip: number,
-    take: number,
-    paging: { page: number; pageSize: number }
-  ) {
-    const [[minLng, minLat], [maxLng, maxLat]] = filter.bbox!;
-
-    // Build SQL WHERE clause from Prisma where object
-    // For now, we'll fetch all matching properties and filter in-memory
-    // TODO: Optimize with raw SQL query
-    const allProperties = await prisma.property.findMany({
-      where,
-      orderBy,
-      include: {
-        media: {
-          where: {
-            type: "PHOTO",
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
-          take: 1,
-        },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            imageUrl: true,
-            logoColor: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            imageUrl: true,
-          },
-        },
-        amenities: {
-          include: {
-            amenity: true,
-          },
-        },
-        spaces: true,
-        energy: true,
-      },
-    });
-
-    // Filter by bbox in-memory
-    const filteredProperties = allProperties.filter((property) => {
-      if (!property.location || property.location.length < 2) return false;
-      const [lng, lat] = property.location;
-      return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
-    });
-
-    // Apply pagination to filtered results
-    const total = filteredProperties.length;
-    const properties = filteredProperties.slice(skip, skip + take);
-
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / paging.pageSize);
-    const hasNextPage = paging.page < totalPages;
-    const hasPreviousPage = paging.page > 1;
-
-    return {
-      properties,
-      pagination: {
-        page: paging.page,
-        pageSize: paging.pageSize,
-        total,
-        totalPages,
-        hasNextPage,
-        hasPreviousPage,
-      },
-    };
-  }
-
-  /**
-   * Build Prisma where clause from filters
-   */
-  private buildWhereClause(filter: SearchFilter): Prisma.PropertyWhereInput {
-    const where: Prisma.PropertyWhereInput = {
-      AND: [],
+    sort?: SearchSort,
+    paging?: SearchPaging
+  ): LystioApiRequest {
+    // Build filter object
+    const apiFilter: LystioApiFilter = {
+      status: "active", // Default to active properties
     };
 
-    const conditions = where.AND as Prisma.PropertyWhereInput[];
-
-    // Property type filters - convert numeric values to enums
-    const propertyTypes = convertPropertyTypes(filter.type);
-    if (propertyTypes && propertyTypes.length > 0) {
-      conditions.push({
-        type: { in: propertyTypes },
-      });
+    // Property type filters
+    if (filter.type && filter.type.length > 0) {
+      apiFilter.type = filter.type;
     }
 
-    const propertySubTypes = convertPropertySubTypes(filter.subType);
-    if (propertySubTypes && propertySubTypes.length > 0) {
-      conditions.push({
-        subType: { in: propertySubTypes },
-      });
+    if (filter.subType && filter.subType.length > 0) {
+      apiFilter.subType = filter.subType;
     }
 
-    const rentTypes = convertRentTypes(filter.rentType);
-    if (rentTypes && rentTypes.length > 0) {
-      conditions.push({
-        rentType: { in: rentTypes },
-      });
-    }
-
-    if (filter.status && filter.status.length > 0) {
-      conditions.push({
-        status: { in: filter.status },
-      });
+    if (filter.rentType && filter.rentType.length > 0) {
+      apiFilter.rentType = filter.rentType;
     }
 
     if (filter.condition && filter.condition.length > 0) {
-      conditions.push({
-        condition: { in: filter.condition },
-      });
+      apiFilter.condition = filter.condition;
     }
 
-    // Price filters (in cents)
+    // Price filters - convert to [min, max] tuple
     if (filter.rentMin !== undefined || filter.rentMax !== undefined) {
-      const rentFilter: Prisma.IntNullableFilter = {};
-
-      if (filter.rentMin !== undefined) {
-        rentFilter.gte = filter.rentMin;
-      }
-
-      if (filter.rentMax !== undefined) {
-        rentFilter.lte = filter.rentMax;
-      }
-
-      conditions.push({
-        OR: [
-          { rent: rentFilter },
-          filter.showPriceOnRequest ? { priceOnRequest: true } : {},
-        ],
-      });
+      apiFilter.rent = [filter.rentMin ?? 0, filter.rentMax ?? 999999999];
     }
 
-    // Price per m² filters
-    if (filter.rentPerMin !== undefined || filter.rentPerMax !== undefined) {
-      // Using rentPer array field [min, max]
-      const rentPerConditions: Prisma.PropertyWhereInput[] = [];
-
-      if (filter.rentPerMin !== undefined) {
-        rentPerConditions.push({
-          rentPer: {
-            path: "$[0]",
-            gte: filter.rentPerMin,
-          } as any,
-        });
-      }
-
-      if (filter.rentPerMax !== undefined) {
-        rentPerConditions.push({
-          rentPer: {
-            path: "$[1]",
-            lte: filter.rentPerMax,
-          } as any,
-        });
-      }
-
-      if (rentPerConditions.length > 0) {
-        conditions.push({ AND: rentPerConditions });
-      }
+    // Size filters - convert to [min, max] tuple
+    if (filter.sizeMin !== undefined || filter.sizeMax !== undefined) {
+      apiFilter.size = [filter.sizeMin ?? 0, filter.sizeMax ?? 999999];
     }
 
-    // Size filters
-    if (filter.sizeMin !== undefined) {
-      conditions.push({
-        size: { gte: filter.sizeMin },
-      });
+    // Room filters - convert to [min, max] tuple
+    if (filter.roomsMin !== undefined || filter.roomsMax !== undefined) {
+      apiFilter.rooms = [filter.roomsMin ?? 0, filter.roomsMax ?? 99];
     }
 
-    if (filter.sizeMax !== undefined) {
-      conditions.push({
-        size: { lte: filter.sizeMax },
-      });
+    if (filter.roomsBedMin !== undefined || filter.roomsBedMax !== undefined) {
+      apiFilter.roomsBed = [filter.roomsBedMin ?? 0, filter.roomsBedMax ?? 99];
     }
 
-    // Room filters
-    if (filter.roomsMin !== undefined) {
-      conditions.push({
-        rooms: { gte: filter.roomsMin },
-      });
+    if (
+      filter.roomsBathMin !== undefined ||
+      filter.roomsBathMax !== undefined
+    ) {
+      apiFilter.roomsBath = [
+        filter.roomsBathMin ?? 0,
+        filter.roomsBathMax ?? 99,
+      ];
     }
 
-    if (filter.roomsMax !== undefined) {
-      conditions.push({
-        rooms: { lte: filter.roomsMax },
-      });
+    // Location filters
+    if (filter.bbox) {
+      apiFilter.bbox = filter.bbox;
     }
 
-    if (filter.roomsBedMin !== undefined) {
-      conditions.push({
-        roomsBed: { gte: filter.roomsBedMin },
-      });
-    }
-
-    if (filter.roomsBedMax !== undefined) {
-      conditions.push({
-        roomsBed: { lte: filter.roomsBedMax },
-      });
-    }
-
-    if (filter.roomsBathMin !== undefined) {
-      conditions.push({
-        roomsBath: { gte: filter.roomsBathMin },
-      });
-    }
-
-    if (filter.roomsBathMax !== undefined) {
-      conditions.push({
-        roomsBath: { lte: filter.roomsBathMax },
-      });
-    }
-
-    // Location filters - bbox (bounding box)
-    // Note: bbox filtering is handled separately in searchWithBbox method
-    // Prisma doesn't support array element comparison directly
-
-    if (filter.city) {
-      conditions.push({
-        city: { contains: filter.city, mode: "insensitive" },
-      });
-    }
-
-    if (filter.zip) {
-      conditions.push({
-        zip: { contains: filter.zip },
-      });
-    }
-
-    if (filter.country) {
-      conditions.push({
-        country: filter.country,
-      });
+    if (filter.withinId && filter.withinId.length > 0) {
+      apiFilter.withinId = filter.withinId;
     }
 
     // Boolean filters
-    if (filter.verified !== undefined) {
-      conditions.push({
-        verified: filter.verified,
-      });
+    if (filter.showPriceOnRequest !== undefined) {
+      apiFilter.showPriceOnRequest = filter.showPriceOnRequest;
     }
 
-    if (filter.active !== undefined) {
-      conditions.push({
-        active: filter.active,
-      });
-    } else {
-      // Default to active properties
-      conditions.push({
-        active: true,
-      });
-    }
-
-    if (filter.listed !== undefined) {
-      conditions.push({
-        listed: filter.listed,
-      });
-    } else {
-      // Default to listed properties
-      conditions.push({
-        listed: true,
-      });
+    if (filter.availableNow !== undefined) {
+      apiFilter.availableNow = filter.availableNow;
     }
 
     // Additional filters
-    if (filter.heatingSource && filter.heatingSource.length > 0) {
-      conditions.push({
-        heatingSource: { in: filter.heatingSource },
-      });
-    }
-
-    if (filter.heatingDistribution && filter.heatingDistribution.length > 0) {
-      conditions.push({
-        heatingDistribution: { in: filter.heatingDistribution },
-      });
-    }
-
-    if (filter.constructionYearMin !== undefined) {
-      conditions.push({
-        constructionYear: { gte: filter.constructionYearMin },
-      });
-    }
-
-    if (filter.constructionYearMax !== undefined) {
-      conditions.push({
-        constructionYear: { lte: filter.constructionYearMax },
-      });
-    }
-
-    if (filter.floorMin !== undefined) {
-      conditions.push({
-        floor: { gte: filter.floorMin },
-      });
-    }
-
-    if (filter.floorMax !== undefined) {
-      conditions.push({
-        floor: { lte: filter.floorMax },
-      });
-    }
-
-    if (filter.availableFrom) {
-      conditions.push({
-        availableFrom: { lte: new Date(filter.availableFrom) },
-      });
-    }
-
-    // Tags filter - array contains
     if (filter.tags && filter.tags.length > 0) {
-      conditions.push({
-        tags: { hasSome: filter.tags },
-      });
+      apiFilter.tags = filter.tags;
     }
 
-    // Amenities filter
-    if (filter.amenityIds && filter.amenityIds.length > 0) {
-      conditions.push({
-        amenities: {
-          some: {
-            amenityId: { in: filter.amenityIds },
-          },
-        },
-      });
+    if (filter.amenities !== undefined) {
+      apiFilter.amenities = filter.amenities;
     }
 
-    // Search query - search in title, address, and abstract
+    if (filter.style) {
+      apiFilter.style = filter.style;
+    }
+
+    // Parking/Cellar filters
+    if (filter.parkingMin !== undefined || filter.parkingMax !== undefined) {
+      apiFilter.parking = [filter.parkingMin ?? 0, filter.parkingMax ?? 99];
+    }
+
+    if (filter.cellarMin !== undefined || filter.cellarMax !== undefined) {
+      apiFilter.cellar = [filter.cellarMin ?? 0, filter.cellarMax ?? 99];
+    }
+
+    // Search query
     if (filter.query) {
-      conditions.push({
-        OR: [
-          { title: { contains: filter.query, mode: "insensitive" } },
-          { address: { contains: filter.query, mode: "insensitive" } },
-          { abstract: { contains: filter.query, mode: "insensitive" } },
-          { city: { contains: filter.query, mode: "insensitive" } },
-        ],
-      });
+      apiFilter.search = filter.query;
     }
 
-    // If no conditions, return all
-    if (conditions.length === 0) {
-      return {};
-    }
+    // Build sort object
+    const apiSort: LystioApiSort = {
+      rent: null,
+      rentPer: null,
+      distance: null,
+      size: null,
+      rooms: null,
+      createdAt: null,
+      countLeads: null,
+    };
 
-    return where;
-  }
-
-  /**
-   * Build Prisma orderBy clause from filter and sort
-   */
-  private buildOrderByClause(
-    filter: SearchFilter,
-    sort?: SearchSort
-  ):
-    | Prisma.PropertyOrderByWithRelationInput
-    | Prisma.PropertyOrderByWithRelationInput[] {
-    // If explicit sort object is provided
     if (sort) {
-      const orderBy: Prisma.PropertyOrderByWithRelationInput[] = [];
-
-      if (sort.createdAt) {
-        orderBy.push({ createdAt: sort.createdAt });
-      }
-
-      if (sort.updatedAt) {
-        orderBy.push({ updatedAt: sort.updatedAt });
-      }
-
-      if (sort.rent) {
-        orderBy.push({ rent: sort.rent });
-      }
-
-      if (sort.size) {
-        orderBy.push({ size: sort.size });
-      }
-
-      if (sort.rooms) {
-        orderBy.push({ rooms: sort.rooms });
-      }
-
-      if (orderBy.length > 0) {
-        return orderBy;
-      }
+      if (sort.rent) apiSort.rent = sort.rent;
+      if (sort.size) apiSort.size = sort.size;
+      if (sort.rooms) apiSort.rooms = sort.rooms;
+      if (sort.createdAt) apiSort.createdAt = sort.createdAt;
+      if (sort.distance) apiSort.distance = sort.distance;
     }
 
-    // Use filter.sort if available
-    if (filter.sort) {
-      switch (filter.sort) {
-        case "most_recent":
-          return { createdAt: "desc" };
-        case "price_asc":
-          return { rent: "asc" };
-        case "price_desc":
-          return { rent: "desc" };
-        case "size_asc":
-          return { size: "asc" };
-        case "size_desc":
-          return { size: "desc" };
-        case "rooms_asc":
-          return { rooms: "asc" };
-        case "rooms_desc":
-          return { rooms: "desc" };
-      }
-    }
+    // Build paging object
+    const apiPaging = {
+      pageSize: paging?.pageSize ?? 10,
+      page: paging?.page ?? 1,
+    };
 
-    // Default sort by most recent
-    return { createdAt: "desc" };
+    return {
+      filter: apiFilter,
+      sort: apiSort,
+      paging: apiPaging,
+    };
   }
 }
 

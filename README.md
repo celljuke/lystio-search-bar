@@ -16,7 +16,8 @@ A modern, full-featured property search application built with Next.js 15, featu
 - **Category Filters** - 11 property categories with detailed subcategories
 - **Price Range** - Interactive slider with histogram visualization
 - **Map Integration** - Interactive Mapbox GL map with property clustering
-- **Real-time Results** - Instant property filtering with tRPC
+- **Real-time Results** - Instant property filtering via Lystio API with tRPC
+- **External API Integration** - Fetches live property data from Lystio API
 
 ### 📱 Responsive Design
 
@@ -36,15 +37,15 @@ A modern, full-featured property search application built with Next.js 15, featu
 - **Module-Based** - Clean separation of concerns with feature modules
 - **Type-Safe** - End-to-end type safety with tRPC and Zod
 - **Performant** - Virtual scrolling, optimistic updates, and smart caching
-- **Scalable** - PostgreSQL database with Prisma ORM
+- **API-Driven** - Integrates with external Lystio API for property data
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - **Node.js** 20+ and npm
-- **Docker** and Docker Compose (for local database)
 - **Mapbox Access Token** (for map features)
+- **Internet Connection** (for Lystio API access)
 
 ### 1. Clone the Repository
 
@@ -64,56 +65,22 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Database Configuration
+# Database Configuration (Optional - used for development only)
 DATABASE_URL="postgresql://lystio_user:lystio_password@localhost:5433/lystio?schema=public"
 DATABASE_URL_UNPOOLED="postgresql://lystio_user:lystio_password@localhost:5433/lystio?schema=public"
 
 # Mapbox (Required for map features)
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN="your_mapbox_access_token_here"
+
+# Lystio API (Required for property data)
+LYSTIO_API_URL="https://api.lystio.co"
 ```
 
 > **Get a Mapbox Token**: Sign up at [mapbox.com](https://account.mapbox.com/) and create an access token.
+>
+> **Lystio API**: The application fetches property data from the Lystio API. See [API_INTEGRATION.md](./API_INTEGRATION.md) for details.
 
-### 4. Set Up the Database
-
-Our automated script handles everything:
-
-```bash
-npm run db:setup
-```
-
-This will:
-
-- ✅ Start PostgreSQL container via Docker Compose
-- ✅ Wait for database to be ready
-- ✅ Generate Prisma client
-- ✅ Push database schema
-- ✅ Display connection details
-
-**Alternative Manual Setup:**
-
-```bash
-# Start database
-npm run db:start
-
-# Generate Prisma client
-npm run db:generate
-
-# Push schema
-npm run db:push
-```
-
-### 5. Seed the Database (Optional)
-
-Populate with sample property data:
-
-```bash
-npm run db:seed
-```
-
-This creates ~1000 sample properties across Vienna, Graz, Salzburg, and other Austrian cities.
-
-### 6. Start Development Server
+### 4. Start Development Server
 
 ```bash
 npm run dev
@@ -316,24 +283,28 @@ const { data } = trpc.search.search.useQuery({
 
 ### Environment Variables
 
-| Variable                          | Description                  | Required |
-| --------------------------------- | ---------------------------- | -------- |
-| `DATABASE_URL`                    | PostgreSQL connection string | ✅ Yes   |
-| `DATABASE_URL_UNPOOLED`           | Direct database connection   | ✅ Yes   |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox API token             | ✅ Yes   |
+| Variable                          | Description                  | Required    |
+| --------------------------------- | ---------------------------- | ----------- |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox API token             | ✅ Yes      |
+| `LYSTIO_API_URL`                  | Lystio API endpoint          | ✅ Yes      |
+| `DATABASE_URL`                    | PostgreSQL connection string | ⚠️ Optional |
+| `DATABASE_URL_UNPOOLED`           | Direct database connection   | ⚠️ Optional |
 
-### Database Configuration
+> **Note**: Database variables are optional and only needed for local development/testing.
 
-Modify `docker-compose.yml` to customize database settings:
+### Lystio API Configuration
 
-```yaml
-environment:
-  POSTGRES_USER: lystio_user
-  POSTGRES_PASSWORD: lystio_password
-  POSTGRES_DB: lystio
-ports:
-  - "5433:5432" # Host:Container
+Update `lib/config.ts` for API settings:
+
+```typescript
+export const config = {
+  lystio: {
+    apiUrl: process.env.LYSTIO_API_URL || "https://api.lystio.co",
+  },
+};
 ```
+
+See [API_INTEGRATION.md](./API_INTEGRATION.md) for detailed API documentation.
 
 ### Mapbox Configuration
 

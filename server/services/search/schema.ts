@@ -1,32 +1,89 @@
 import { z } from "zod";
-import { $Enums } from "@/lib/generated/prisma";
 
-// Bbox schema: [[minLng, minLat], [maxLng, maxLat]]
-export const bboxSchema = z.tuple([
-  z.tuple([z.number(), z.number()]),
-  z.tuple([z.number(), z.number()]),
-]);
+// Lystio API Filter schema - matching the API structure
+export const lystioApiFilterSchema = z.object({
+  ids: z.array(z.number()).optional(),
+  size: z.tuple([z.number(), z.number()]).optional(),
+  rent: z.tuple([z.number(), z.number()]).optional(),
+  rentScope: z.enum(["rent", "buy"]).optional(),
+  rentUtilities: z.tuple([z.number(), z.number()]).optional(),
+  rooms: z.tuple([z.number(), z.number()]).optional(),
+  roomsBed: z.tuple([z.number(), z.number()]).optional(),
+  roomsBath: z.tuple([z.number(), z.number()]).optional(),
+  type: z.array(z.number()).optional(),
+  subType: z.array(z.number()).optional(),
+  condition: z.array(z.number()).optional(),
+  accessibility: z.array(z.number()).optional(),
+  rentType: z.array(z.enum(["rent", "buy"])).optional(),
+  floorType: z.array(z.number()).optional(),
+  heatingType: z.array(z.number()).optional(),
+  pets: z.array(z.string()).optional(),
+  readiness: z.array(z.number()).optional(),
+  tier: z.array(z.number()).optional(),
+  furnish: z.array(z.number()).optional(),
+  status: z.string().optional(),
+  locationAccuracy: z.string().optional(),
+  search: z.string().optional(),
+  rentDurationMax: z.number().optional(),
+  hasRequests: z.boolean().optional(),
+  hasRequestsUserId: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  availableNow: z.boolean().optional(),
+  within: z.any().nullable().optional(),
+  withinId: z.array(z.string()).optional(),
+  bbox: z.any().nullable().optional(),
+  near: z.any().nullable().optional(),
+  amenities: z.any().nullable().optional(),
+  moveIn: z.string().optional(),
+  maxAge: z.number().optional(),
+  efficiencyIncludeNull: z.boolean().optional(),
+  minGarages: z.boolean().optional(),
+  efficiency: z.number().optional(),
+  listId: z.number().optional(),
+  searchAgentId: z.number().optional(),
+  withLeads: z.boolean().optional(),
+  listingDuration: z.number().optional(),
+  parking: z.tuple([z.number(), z.number()]).optional(),
+  cellar: z.tuple([z.number(), z.number()]).optional(),
+  style: z.enum(["old", "new"]).optional(),
+  showPriceOnRequest: z.boolean().optional(),
+});
 
-// Filter schema
+// Lystio API Sort schema
+export const lystioApiSortSchema = z.object({
+  rent: z.enum(["asc", "desc"]).nullable().optional(),
+  rentPer: z.enum(["asc", "desc"]).nullable().optional(),
+  distance: z.enum(["asc", "desc"]).nullable().optional(),
+  size: z.enum(["asc", "desc"]).nullable().optional(),
+  rooms: z.enum(["asc", "desc"]).nullable().optional(),
+  createdAt: z.enum(["asc", "desc"]).nullable().optional(),
+  countLeads: z.enum(["asc", "desc"]).nullable().optional(),
+});
+
+// Lystio API Paging schema
+export const lystioApiPagingSchema = z.object({
+  pageSize: z.number().min(1).max(100).default(10),
+  page: z.number().min(1).default(1),
+});
+
+// Main Lystio API request schema
+export const lystioApiRequestSchema = z.object({
+  filter: lystioApiFilterSchema,
+  sort: lystioApiSortSchema,
+  paging: lystioApiPagingSchema,
+});
+
+// Simplified client-facing filter schema
 export const searchFilterSchema = z.object({
-  // Property type filters - accept both numbers and enum strings
-  type: z
-    .array(z.union([z.number(), z.nativeEnum($Enums.PropertyType)]))
-    .optional(),
-  subType: z
-    .array(z.union([z.number(), z.nativeEnum($Enums.PropertySubType)]))
-    .optional(),
-  rentType: z
-    .array(z.union([z.string(), z.nativeEnum($Enums.RentType)]))
-    .optional(),
-  status: z.array(z.nativeEnum($Enums.PropertyStatus)).optional(),
-  condition: z.array(z.nativeEnum($Enums.PropertyCondition)).optional(),
+  // Property type filters
+  type: z.array(z.number()).optional(),
+  subType: z.array(z.number()).optional(),
+  rentType: z.array(z.enum(["rent", "buy"])).optional(),
+  condition: z.array(z.number()).optional(),
 
-  // Price filters (in cents)
+  // Price filters
   rentMin: z.number().optional(),
   rentMax: z.number().optional(),
-  rentPerMin: z.number().optional(),
-  rentPerMax: z.number().optional(),
 
   // Size filters
   sizeMin: z.number().optional(),
@@ -41,7 +98,8 @@ export const searchFilterSchema = z.object({
   roomsBathMax: z.number().optional(),
 
   // Location filters
-  bbox: bboxSchema.optional(),
+  bbox: z.any().optional(),
+  withinId: z.array(z.string()).optional(),
   city: z.string().optional(),
   zip: z.string().optional(),
   country: z.string().optional(),
@@ -49,68 +107,48 @@ export const searchFilterSchema = z.object({
   // Boolean filters
   showPriceOnRequest: z.boolean().optional(),
   verified: z.boolean().optional(),
-  active: z.boolean().optional(),
-  listed: z.boolean().optional(),
+  availableNow: z.boolean().optional(),
 
   // Additional filters
-  heatingSource: z.array(z.nativeEnum($Enums.HeatingSource)).optional(),
-  heatingDistribution: z
-    .array(z.nativeEnum($Enums.HeatingDistribution))
-    .optional(),
-  constructionYearMin: z.number().optional(),
-  constructionYearMax: z.number().optional(),
-  floorMin: z.number().optional(),
-  floorMax: z.number().optional(),
-  availableFrom: z.string().datetime().optional(),
-
-  // Tags filter
   tags: z.array(z.string()).optional(),
-
-  // Amenities filter
-  amenityIds: z.array(z.string()).optional(),
+  amenities: z.array(z.number()).optional(),
+  style: z.enum(["old", "new"]).optional(),
+  parkingMin: z.number().optional(),
+  parkingMax: z.number().optional(),
+  cellarMin: z.number().optional(),
+  cellarMax: z.number().optional(),
 
   // Search query
   query: z.string().optional(),
-
-  // Sort
-  sort: z
-    .enum([
-      "most_recent",
-      "price_asc",
-      "price_desc",
-      "size_asc",
-      "size_desc",
-      "rooms_asc",
-      "rooms_desc",
-    ])
-    .optional(),
 });
 
 // Pagination schema
 export const pagingSchema = z.object({
   page: z.number().min(1).default(1),
-  pageSize: z.number().min(1).max(100).default(26),
+  pageSize: z.number().min(1).max(100).default(10),
 });
 
-// Sort schema
-export const sortSchema = z
-  .object({
-    createdAt: z.enum(["asc", "desc"]).optional(),
-    updatedAt: z.enum(["asc", "desc"]).optional(),
-    rent: z.enum(["asc", "desc"]).optional(),
-    size: z.enum(["asc", "desc"]).optional(),
-    rooms: z.enum(["asc", "desc"]).optional(),
-  })
-  .optional();
+// Sort schema - client facing
+export const sortSchema = z.object({
+  createdAt: z.enum(["asc", "desc"]).optional(),
+  rent: z.enum(["asc", "desc"]).optional(),
+  size: z.enum(["asc", "desc"]).optional(),
+  rooms: z.enum(["asc", "desc"]).optional(),
+  distance: z.enum(["asc", "desc"]).optional(),
+});
 
 // Main search input schema
 export const searchInputSchema = z.object({
   filter: searchFilterSchema,
-  sort: sortSchema,
+  sort: sortSchema.optional(),
   paging: pagingSchema,
 });
 
 // Export types
+export type LystioApiFilter = z.infer<typeof lystioApiFilterSchema>;
+export type LystioApiSort = z.infer<typeof lystioApiSortSchema>;
+export type LystioApiPaging = z.infer<typeof lystioApiPagingSchema>;
+export type LystioApiRequest = z.infer<typeof lystioApiRequestSchema>;
 export type SearchFilter = z.infer<typeof searchFilterSchema>;
 export type SearchPaging = z.infer<typeof pagingSchema>;
 export type SearchSort = z.infer<typeof sortSchema>;

@@ -1,9 +1,8 @@
 "use client";
 
-import { MobileSearchModal } from "@/modules/search";
+import { MobileSearchModal, useRentBuyMode } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
 import { useLocationSelect } from "@/modules/search";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { HeaderActions } from "./header-actions";
 import { HeaderLogo } from "./header-logo";
@@ -11,9 +10,18 @@ import { MobileHeader } from "./mobile-header";
 import { DesktopSearchArea } from "./desktop-search-area";
 
 export function Header() {
-  const [rentBuyValue, setRentBuyValue] = useState<"rent" | "buy" | "ai">(
-    "rent"
-  );
+  const { mode: rentBuyMode, setMode: setRentBuyMode } = useRentBuyMode();
+
+  // Map "ai" mode to "rent" for now (since API doesn't support AI mode yet)
+  const rentBuyValue = rentBuyMode as "rent" | "buy" | "ai";
+
+  const handleRentBuyChange = (value: "rent" | "buy" | "ai") => {
+    // Only set mode if it's "rent" or "buy" (ignore "ai" for now)
+    if (value === "rent" || value === "buy") {
+      setRentBuyMode(value);
+    }
+  };
+
   const {
     isAnyPopoverOpen,
     exitSearchMode,
@@ -73,7 +81,7 @@ export function Header() {
             {/* Search Area */}
             <DesktopSearchArea
               rentBuyValue={rentBuyValue}
-              onRentBuyChange={setRentBuyValue}
+              onRentBuyChange={handleRentBuyChange}
               isPopoverOpen={isAnyPopoverOpen()}
               isInSearchMode={isInSearchMode}
             />

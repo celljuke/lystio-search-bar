@@ -1,6 +1,5 @@
 import type { SearchFilters, PropertyTypeFilter } from "../types";
 import type { SearchFilter } from "@/server/services/search/schema";
-import { $Enums } from "@/lib/generated/prisma";
 import { getBboxForLocation } from "./location-utils";
 import { CATEGORIES } from "../constants/categories";
 
@@ -12,8 +11,6 @@ export function convertCategoryToFilters(
   rentBuyMode: "rent" | "buy" = "rent"
 ): SearchFilter {
   const backendFilter: SearchFilter = {
-    active: true,
-    listed: true,
     // Set rent type based on mode - use lowercase strings
     rentType: [rentBuyMode === "rent" ? "rent" : "buy"],
     showPriceOnRequest: true, // Always show price on request properties
@@ -87,10 +84,10 @@ export function convertCategoryToFilters(
     }
   }
 
-  // Price range filter (convert from € to cents)
+  // Price range filter (API expects euros, not cents)
   if (uiFilters.priceRange) {
-    backendFilter.rentMin = uiFilters.priceRange.min * 100; // Convert € to cents
-    backendFilter.rentMax = uiFilters.priceRange.max * 100; // Convert € to cents
+    backendFilter.rentMin = uiFilters.priceRange.min; // Already in euros
+    backendFilter.rentMax = uiFilters.priceRange.max; // Already in euros
   }
 
   return backendFilter;
@@ -98,11 +95,10 @@ export function convertCategoryToFilters(
 
 /**
  * Format price for display
+ * Note: API returns price in euros, not cents
  */
-export function formatPrice(cents: number | null | undefined): string {
-  if (!cents) return "Price on request";
-
-  const euros = cents / 100;
+export function formatPrice(euros: number | null | undefined): string {
+  if (!euros) return "Price on request";
 
   if (euros >= 1000000) {
     return `€${(euros / 1000000).toFixed(2)}M`;
@@ -119,14 +115,18 @@ export function formatPrice(cents: number | null | undefined): string {
  * Format price per m² for display
  */
 export function formatPricePerSqm(
-  rentPer: number[] | null | undefined
+  rentPer: (number | null)[] | null | undefined
 ): string {
   if (!rentPer || rentPer.length === 0) return "";
 
   const min = rentPer[0];
-  const max = rentPer[1] || min;
+  const max = rentPer[1];
 
-  if (min === max) {
+  // Check if min is null or undefined
+  if (min === null || min === undefined) return "";
+
+  // If max is null or same as min, show single value
+  if (max === null || max === undefined || min === max) {
     return `€${min.toFixed(0)}/m²`;
   }
 
@@ -162,23 +162,89 @@ export function formatFloor(floor: number | null | undefined): string {
  * Format address for display
  */
 export function formatAddress(
-  address: string,
-  city: string,
-  zip: string
+  address: string | null | undefined,
+  city: string | null | undefined,
+  zip: string | null | undefined
 ): string {
-  return `${address}, ${zip} ${city}`;
+  const parts = [];
+
+  if (address) parts.push(address);
+  if (zip) parts.push(zip);
+  if (city) parts.push(city);
+
+  return parts.join(", ") || "Address not available";
 }
+
+/**
+ * Property type mapping for display
+ */
+const PROPERTY_TYPE_MAP: Record<number, string> = {
+  0: "Apartment",
+  1: "Apartment",
+  2: "Apartment",
+  3: "House",
+  4: "Land",
+  5: "Commercial",
+  11: "Holiday Home",
+  12: "New Development",
+  13: "Parking",
+  20: "Office",
+  21: "Investment",
+};
+
+/**
+ * Property subtype mapping for display
+ */
+const PROPERTY_SUBTYPE_MAP: Record<number, string> = {
+  // Houses (type 3)
+  3: "Townhouse",
+  6: "Farmhouse",
+  7: "Villa",
+  8: "Single Family House",
+  9: "Multi-Family House",
+  10: "Shell Construction",
+
+  // Apartments (type 2)
+  46: "Penthouse",
+  47: "Wohnung",
+  49: "Penthouse",
+  50: "Genossenschaftswohnung",
+  51: "Maisonette",
+  52: "Loft/Studio",
+  53: "Dachgeschoss",
+  54: "Erdgeschoß",
+  55: "Souterrain",
+  103: "Dachgeschoss",
+
+  // Land (type 4)
+  72: "Agricultural Land",
+  73: "Forest Land",
+  201: "Building Land",
+  202: "Commercial Plot",
+  203: "Industrial Plot",
+
+  // Parking (type 13)
+  153: "Single Garage",
+  154: "Double Garage",
+  155: "Parking Space",
+  156: "Carport",
+  157: "Underground Garage",
+  158: "Underground Parking Space",
+  159: "Parking Space with Charging Station",
+
+  // Investment (type 21)
+  114: "Investment Property",
+  115: "Development Property",
+  116: "Project Development",
+
+  // Other
+  200: "Other",
+};
 
 /**
  * Get property type display name
  */
-export function getPropertyTypeDisplay(
-  type: $Enums.PropertyType,
-  subType: $Enums.PropertySubType
-): string {
-  // Return subtype as it's more specific
-  return subType
-    .split("_")
-    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(" ");
+export function getPropertyTypeDisplay(type: number, subType: number): string {
+  // Return subtype name if available, otherwise fall back to type
+  return PROPERTY_SUBTYPE_MAP[subType] || PROPERTY_TYPE_MAP[type] || "Property";
 }

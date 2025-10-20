@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [{ hostname: "cdn.lystio.at" }],
+    remotePatterns: [
+      { hostname: "cdn.lystio.at" },
+      { hostname: "cdn.lystio.co" },
+    ],
   },
 };
 

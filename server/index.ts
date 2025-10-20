@@ -15,17 +15,11 @@ export {
   type SearchFilter,
   type SearchSort,
   type SearchPaging,
+  type LystioApiRequest,
+  type LystioApiFilter,
+  type LystioApiSort,
+  type LystioApiPaging,
 } from "./services/search/index.export";
-
-// Type conversion utilities
-export {
-  convertPropertyTypes,
-  convertPropertySubTypes,
-  convertRentTypes,
-  PropertyTypeMap,
-  PropertySubTypeMap,
-  RentTypeMap,
-} from "./services/search/types";
 
 // Schemas
 export {
@@ -33,5 +27,8 @@ export {
   searchFilterSchema,
   sortSchema,
   pagingSchema,
-  bboxSchema,
+  lystioApiRequestSchema,
+  lystioApiFilterSchema,
+  lystioApiSortSchema,
+  lystioApiPagingSchema,
 } from "./services/search/schema";

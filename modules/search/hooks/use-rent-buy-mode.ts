@@ -12,6 +12,9 @@ interface RentBuyModeState {
 /**
  * Hook for managing rent/buy mode state
  * Persisted to localStorage for better UX
+ *
+ * Note: "ai" mode is handled at the UI level but stored as "rent"
+ * since the API doesn't support AI mode yet
  */
 export const useRentBuyMode = create<RentBuyModeState>()(
   persist(
