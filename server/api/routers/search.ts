@@ -15,4 +15,10 @@ export const searchRouter = router({
     .query(async ({ input }) => {
       return await searchService.getHistogram(input);
     }),
+
+  count: publicProcedure
+    .input(searchFilterSchema)
+    .query(async ({ input }) => {
+      return await searchService.getCount(input);
+    }),
 });

@@ -8,8 +8,9 @@ import type {
   LystioApiSort,
   SearchPaging,
   HistogramResponse,
+  CountResponse,
 } from "./schema";
-import { histogramResponseSchema } from "./schema";
+import { histogramResponseSchema, countResponseSchema } from "./schema";
 
 /**
  * Response structure from Lystio API
@@ -251,6 +252,46 @@ export class SearchService {
       console.error("Error fetching histogram:", error);
       throw new Error(
         `Failed to fetch histogram: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Get count of properties matching the filter
+   * Uses the Lystio API /tenement/search/count endpoint
+   */
+  async getCount(filter: SearchFilter): Promise<CountResponse> {
+    try {
+      // Build the API request
+      const apiRequest = this.buildLystioApiRequest(filter);
+      const apiFilter = apiRequest.filter;
+
+      const response = await fetch(`${this.apiUrl}/tenement/search/count`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiFilter),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Lystio API count error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate response with Zod
+      const validatedData = countResponseSchema.parse(data);
+
+      return validatedData;
+    } catch (error) {
+      console.error("Error fetching count:", error);
+      throw new Error(
+        `Failed to fetch count: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );

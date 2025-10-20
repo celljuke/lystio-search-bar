@@ -6,7 +6,8 @@ import { PropertyCard } from "./property-card";
 import { usePropertySearch } from "../hooks/use-property-search";
 import { useSearchStore } from "../store";
 import { useRentBuyMode } from "../hooks/use-rent-buy-mode";
-import { Loader2 } from "lucide-react";
+import { useVerifiedCount } from "../hooks/use-verified-count";
+import { Loader2, CheckCircle2 } from "lucide-react";
 
 interface PropertyListProps {
   onPropertyClick?: (propertyId: string) => void;
@@ -26,6 +27,9 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
   // Get location from filters for dynamic header
   const { filters } = useSearchStore();
   const { mode: rentBuyMode } = useRentBuyMode();
+  
+  // Get verified count
+  const { count: verifiedCount, isLoading: isCountLoading } = useVerifiedCount();
 
   const scrollParentRef = useRef<HTMLElement | null>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
@@ -164,11 +168,20 @@ export function PropertyList({ onPropertyClick }: PropertyListProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{headerText}</h2>
-          {pagination && (
-            <p className="text-sm text-gray-600 mt-1">
-              Showing {properties.length} of {pagination.total} properties
-            </p>
-          )}
+          <div className="flex items-center gap-3 mt-2">
+            {!isCountLoading && verifiedCount > 0 && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <span className="font-medium text-gray-900">{verifiedCount}</span>
+                <span>verified listing{verifiedCount !== 1 ? "s" : ""}</span>
+              </div>
+            )}
+            {pagination && (
+              <p className="text-sm text-gray-600">
+                {!isCountLoading && verifiedCount > 0 && "•"} Showing {properties.length} of {pagination.total}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Sort Dropdown - TODO: Implement */}
