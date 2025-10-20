@@ -12,13 +12,17 @@ export function usePrice({ rentBuyMode, onSelectPrice }: UsePriceProps) {
 
   // Price bounds based on histogram data or defaults
   const priceBounds = useMemo(() => {
-    if (histogramResponse?.range) {
+    if (
+      histogramResponse?.range &&
+      histogramResponse.range[0] !== null &&
+      histogramResponse.range[1] !== null
+    ) {
       const [min, max] = histogramResponse.range;
       const step = rentBuyMode === "buy" ? 10000 : 100;
       return { min, max, step };
     }
 
-    // Fallback defaults if histogram not loaded
+    // Fallback defaults if histogram not loaded or range is null (no properties)
     if (rentBuyMode === "rent" || rentBuyMode === "ai") {
       return { min: 400, max: 20000, step: 100 };
     }

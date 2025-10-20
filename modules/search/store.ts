@@ -62,12 +62,15 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   setHistogram: (histogram) => set({ histogram }),
   setHistogramLoading: (isHistogramLoading) => set({ isHistogramLoading }),
 
-  setFilters: (filters) => set({ filters }),
+  setFilters: (filters) => {
+    set({ filters });
+  },
 
   updateFilter: (key, value) => {
-    set((state) => ({
-      filters: { ...state.filters, [key]: value },
-    }));
+    set((state) => {
+      const newFilters = { ...state.filters, [key]: value };
+      return { filters: newFilters };
+    });
   },
 
   setIsSearching: (isSearching) => set({ isSearching }),

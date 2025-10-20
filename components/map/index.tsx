@@ -97,8 +97,6 @@ export function Map({
   useEffect(() => {
     if (!map.current || !mapLoaded || !bbox) return;
 
-    console.log("Fitting bounds to:", bbox);
-
     // Convert bbox to LngLatBoundsLike format for Mapbox
     const bounds: mapboxgl.LngLatBoundsLike = [
       [bbox[0][0], bbox[0][1]], // Southwest corner [lng, lat]

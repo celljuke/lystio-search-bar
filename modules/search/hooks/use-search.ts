@@ -15,7 +15,6 @@ export function useSearch() {
     async (searchFilters: SearchFilters) => {
       setIsSearching(true);
       try {
-        console.log("Searching with filters:", searchFilters);
         // Trigger the tRPC query refetch
         await triggerSearch();
       } catch (error) {

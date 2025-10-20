@@ -146,7 +146,7 @@ export const searchInputSchema = z.object({
 
 // Histogram response schema
 export const histogramResponseSchema = z.object({
-  range: z.tuple([z.number(), z.number()]), // [min, max]
+  range: z.tuple([z.number().nullable(), z.number().nullable()]), // [min, max] - can be null if no data
   histogram: z.array(z.number()), // Array of counts for each bin
 });
 

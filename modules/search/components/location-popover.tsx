@@ -66,22 +66,31 @@ export function LocationPopover({
       if (boundaryData && boundaryData.length > 0) {
         const { bbox } = boundaryData[0];
 
-        // Create location filter data
+        // Create location filter data with withinId for API filtering
         const locationData: LocationFilter = {
           name: city.name,
-          bbox: bbox,
+          withinId: [city.id], // Use city ID for API filtering
+          bbox: bbox, // Keep bbox for map display
           center: {
             lng: (bbox[0][0] + bbox[1][0]) / 2,
             lat: (bbox[0][1] + bbox[1][1]) / 2,
           },
         };
 
-        // Update filters in store
-        updateFilter("location", city.name);
-        updateFilter("locationData", locationData);
+        // Update both filters at once to avoid race conditions
+        const store = useSearchStore.getState();
+        const currentFilters = store.filters;
 
-        // Call the callback
-        onSelectLocation(city.name);
+        const newFilters = {
+          ...currentFilters,
+          location: city.name,
+          locationData: locationData,
+        };
+
+        store.setFilters(newFilters);
+
+        // NOTE: Don't call onSelectLocation here because it will overwrite locationData without withinId
+        // The filters are already set above with the correct withinId
 
         // Close the popover
         closeDropdown();

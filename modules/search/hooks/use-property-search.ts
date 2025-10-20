@@ -9,7 +9,9 @@ import { convertCategoryToFilters } from "../utils/filter-converter";
  * Connects the UI search filters with the backend search API
  */
 export function usePropertySearch() {
-  const { filters, isInSearchMode } = useSearchStore();
+  // Use a selector to deeply track the filters object
+  const filters = useSearchStore((state) => state.filters);
+  const isInSearchMode = useSearchStore((state) => state.isInSearchMode);
   const { mode: rentBuyMode } = useRentBuyMode();
   const [currentPage, setCurrentPage] = useState(1);
   const [allProperties, setAllProperties] = useState<any[]>([]);

@@ -16,12 +16,17 @@ export function convertCategoryToFilters(
     showPriceOnRequest: true, // Always show price on request properties
   };
 
-  // Location filter - use bbox from locationData or fallback to city name
-  if (uiFilters.locationData?.bbox) {
-    // Use the bbox from locationData
+  if (
+    uiFilters.locationData?.withinId &&
+    uiFilters.locationData.withinId.length > 0
+  ) {
+    // Use withinId for district-based filtering (primary method)
+    backendFilter.withinId = uiFilters.locationData.withinId;
+  } else if (uiFilters.locationData?.bbox) {
+    // Fallback to bbox if withinId not available
     backendFilter.bbox = uiFilters.locationData.bbox;
   } else if (uiFilters.location) {
-    // Try to get bbox from location string
+    // Try to get bbox from location string as last resort
     const bbox = getBboxForLocation(uiFilters.location);
     if (bbox) {
       backendFilter.bbox = bbox;

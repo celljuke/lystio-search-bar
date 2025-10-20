@@ -12,7 +12,8 @@ export interface PriceRangeFilter {
 
 export interface LocationFilter {
   name: string; // Display name (e.g., "Vienna")
-  bbox: [[number, number], [number, number]]; // [[minLng, minLat], [maxLng, maxLat]]
+  withinId?: string[]; // Array of district IDs for API filtering (e.g., ["osm:b4:-109166:b9:-1990592"])
+  bbox?: [[number, number], [number, number]]; // [[minLng, minLat], [maxLng, maxLat]] - for map display
   center?: { lng: number; lat: number }; // Optional center coordinates
 }
 
