@@ -49,6 +49,22 @@ export const boundaryResponseItemSchema = z.object({
 export const boundaryResponseSchema = z.array(boundaryResponseItemSchema);
 
 /**
+ * Schema for recent search item
+ */
+export const recentSearchSchema = z.object({
+  mapboxId: z.string(),
+  type: z.string(), // e.g., "locality"
+  name: z.string(),
+  pt: z.tuple([z.number(), z.number()]), // [lng, lat]
+});
+
+/**
+ * Schema for recent searches API response
+ * Just a flat array of search objects
+ */
+export const recentSearchesResponseSchema = z.array(recentSearchSchema);
+
+/**
  * Type exports
  */
 export type LocationChild = z.infer<typeof locationChildSchema>;
@@ -59,3 +75,7 @@ export type PopularLocationsResponse = z.infer<
 export type BoundaryRequest = z.infer<typeof boundaryRequestSchema>;
 export type BoundaryResponseItem = z.infer<typeof boundaryResponseItemSchema>;
 export type BoundaryResponse = z.infer<typeof boundaryResponseSchema>;
+export type RecentSearch = z.infer<typeof recentSearchSchema>;
+export type RecentSearchesResponse = z.infer<
+  typeof recentSearchesResponseSchema
+>;

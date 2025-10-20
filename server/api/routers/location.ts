@@ -21,4 +21,11 @@ export const locationRouter = router({
     .mutation(async ({ input }) => {
       return await locationService.getBoundary(input);
     }),
+
+  /**
+   * Get recent searches
+   */
+  getRecentSearches: publicProcedure.query(async () => {
+    return await locationService.getRecentSearches();
+  }),
 });

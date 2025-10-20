@@ -3,9 +3,11 @@ import {
   popularLocationsResponseSchema,
   boundaryRequestSchema,
   boundaryResponseSchema,
+  recentSearchesResponseSchema,
   type PopularLocationsResponse,
   type BoundaryRequest,
   type BoundaryResponse,
+  type RecentSearch,
 } from "./schema";
 
 /**
@@ -89,6 +91,49 @@ export class LocationService {
       console.error("Error fetching boundary:", error);
       throw new Error(
         `Failed to fetch boundary: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * Fetch recent searches
+   * @returns Array of recent search locations (deduplicated)
+   */
+  async getRecentSearches(): Promise<RecentSearch[]> {
+    try {
+      const url = `${this.baseUrl}/geo/search/recent`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch recent searches: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate response with Zod schema
+      const validatedData = recentSearchesResponseSchema.parse(data);
+
+      // Remove duplicates based on mapboxId
+      const uniqueSearches = validatedData.filter(
+        (search, index, self) =>
+          index === self.findIndex((s) => s.mapboxId === search.mapboxId)
+      );
+
+      return uniqueSearches;
+    } catch (error) {
+      console.error("Error fetching recent searches:", error);
+      throw new Error(
+        `Failed to fetch recent searches: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );

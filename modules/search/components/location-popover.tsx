@@ -39,6 +39,10 @@ export function LocationPopover({
   // Fetch popular locations from API
   const { data: locations, isLoading } = trpc.location.getPopular.useQuery();
 
+  // Fetch recent searches from API
+  const { data: recentSearches, isLoading: isLoadingRecent } =
+    trpc.location.getRecentSearches.useQuery();
+
   // Mutation for fetching boundary
   const getBoundaryMutation = trpc.location.getBoundary.useMutation();
 
@@ -142,6 +146,80 @@ export function LocationPopover({
             </span>
             <ArrowRight className="w-5 h-5 text-[#A540F3]" />
           </button>
+
+          {/* Recent Searches */}
+          {!isLoadingRecent && recentSearches && recentSearches.length > 0 && (
+            <div>
+              <h4 className="text-base font-semibold text-gray-900 mb-3">
+                Recent Searches
+              </h4>
+              <div className="space-y-2">
+                {recentSearches.slice(0, 3).map((search, index) => (
+                  <motion.button
+                    key={search.mapboxId}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: index * 0.05,
+                      duration: 0.2,
+                      ease: [0.4, 0, 0.2, 1],
+                    }}
+                    className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                    onClick={() => {
+                      // Create a bbox around the point (approximately 1km radius)
+                      // 1km ≈ 0.009 degrees at the equator
+                      const offset = 0.009;
+                      const [lng, lat] = search.pt;
+                      const bbox: [[number, number], [number, number]] = [
+                        [lng - offset, lat - offset], // SW corner
+                        [lng + offset, lat + offset], // NE corner
+                      ];
+
+                      const store = useSearchStore.getState();
+                      store.setFilters({
+                        ...store.filters,
+                        location: search.name,
+                        locationData: {
+                          name: search.name,
+                          bbox: bbox,
+                          center: {
+                            lng: lng,
+                            lat: lat,
+                          },
+                        },
+                      });
+                      closeDropdown();
+                    }}
+                  >
+                    <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <svg
+                        className="w-4 h-4 text-gray-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium text-gray-900">
+                        {search.name}
+                      </p>
+                      <p className="text-xs text-gray-500 capitalize">
+                        {search.type}
+                      </p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* By City */}
           <div>
