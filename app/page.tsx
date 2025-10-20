@@ -10,10 +10,13 @@ import {
 import { useSearchStore } from "@/modules/search/store";
 
 export default function Home() {
-  const { viewMode } = useSearchStore();
+  const { viewMode, filters } = useSearchStore();
 
   // Fetch histogram data on filter changes
   useHistogram();
+
+  // Get bbox from location filter
+  const bbox = filters.locationData?.bbox;
 
   return (
     <>
@@ -31,6 +34,7 @@ export default function Home() {
             accessToken={config.mapbox.accessToken}
             initialCenter={[16.3738, 48.2082]} // Vienna, Austria
             initialZoom={11}
+            bbox={bbox}
             className="w-full h-full"
           />
         </div>
@@ -41,6 +45,7 @@ export default function Home() {
             accessToken={config.mapbox.accessToken}
             initialCenter={[16.3738, 48.2082]} // Vienna, Austria
             initialZoom={11}
+            bbox={bbox}
             className="w-full h-full"
           />
         </div>

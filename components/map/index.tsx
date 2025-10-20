@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -9,6 +9,7 @@ interface MapProps {
   initialCenter?: [number, number];
   initialZoom?: number;
   className?: string;
+  bbox?: [[number, number], [number, number]]; // [[minLng, minLat], [maxLng, maxLat]]
 }
 
 export function Map({
@@ -16,10 +17,13 @@ export function Map({
   initialCenter = [16.3738, 48.2082], // Vienna, Austria
   initialZoom = 11,
   className = "",
+  bbox,
 }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
+  // Initialize map only once
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -32,6 +36,11 @@ export function Map({
       style: "mapbox://styles/mapbox/streets-v12",
       center: initialCenter,
       zoom: initialZoom,
+    });
+
+    // Wait for map to load
+    map.current.on("load", () => {
+      setMapLoaded(true);
     });
 
     // Add navigation controls
@@ -59,7 +68,28 @@ export function Map({
         map.current = null;
       }
     };
-  }, [accessToken, initialCenter, initialZoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Update map bounds when bbox changes
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !bbox) return;
+
+    console.log("Fitting bounds to:", bbox);
+
+    // Convert bbox to LngLatBoundsLike format for Mapbox
+    const bounds: mapboxgl.LngLatBoundsLike = [
+      [bbox[0][0], bbox[0][1]], // Southwest corner [lng, lat]
+      [bbox[1][0], bbox[1][1]], // Northeast corner [lng, lat]
+    ];
+
+    // Animate to the new bounds
+    map.current.fitBounds(bounds, {
+      padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      duration: 1000, // 1 second animation
+      maxZoom: 13, // Don't zoom in too much
+    });
+  }, [bbox, mapLoaded]);
 
   return (
     <div className={className}>
