@@ -145,7 +145,10 @@ export function MobileSearchModal() {
 
             {/* City Grid and State List */}
             <div className="flex-1 overflow-y-auto px-4">
-              <MobileLocationContent onSelectLocation={handleLocationSelect} />
+              <MobileLocationContent
+                onSelectLocation={handleLocationSelect}
+                onClose={closeMobileSearch}
+              />
             </div>
           </>
         ) : (
