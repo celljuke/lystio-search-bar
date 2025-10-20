@@ -35,13 +35,21 @@ export function useAiSearch() {
       // Map location (withinId or bbox)
       if (aiResponse.withinId && aiResponse.withinId.length > 0) {
         newFilters.locationData = {
-          ...newFilters.locationData,
+          name: newFilters.locationData?.name || "AI Location",
           withinId: aiResponse.withinId,
+          bbox: newFilters.locationData?.bbox,
+          center: newFilters.locationData?.center,
         };
       } else if (aiResponse.bbox) {
+        const [minLng, minLat] = aiResponse.bbox[0];
+        const [maxLng, maxLat] = aiResponse.bbox[1];
         newFilters.locationData = {
-          ...newFilters.locationData,
+          name: newFilters.locationData?.name || "AI Area",
           bbox: aiResponse.bbox,
+          center: {
+            lng: (minLng + maxLng) / 2,
+            lat: (minLat + maxLat) / 2,
+          },
         };
       }
 
