@@ -12,6 +12,7 @@ import { LocationPopover } from "./location-popover";
 import { CategoryPopover } from "./category-popover";
 import { PricePopover } from "./price-popover";
 import { LocationSearchInput } from "./location-search-input";
+import { AnimatePresence, motion } from "motion/react";
 
 export function SearchBar({
   onSearch,
@@ -117,9 +118,19 @@ export function SearchBar({
     <div className={cn("relative w-full max-w-4xl mx-auto", className)}>
       {/* Desktop Layout */}
       <div className="hidden md:block w-full" ref={searchBarRef}>
-        <div
+        <motion.div
+          animate={{
+            scale: isInSearchMode ? 1.02 : 1,
+            boxShadow: isInSearchMode
+              ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+              : "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+          }}
+          transition={{
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1],
+          }}
           className={cn(
-            "relative bg-white rounded-full shadow-lg border border-gray-200 transition-all duration-200 flex items-center",
+            "relative bg-white rounded-full border border-gray-200 transition-all duration-200 flex items-center",
             isInSearchMode ? "h-16" : "h-14"
           )}
         >
@@ -153,9 +164,11 @@ export function SearchBar({
             )}
           >
             {/* Show location popover when opened and user hasn't started typing */}
-            {isOpen("location") && (
-              <LocationPopover onSelectLocation={handleLocationSelect} />
-            )}
+            <AnimatePresence mode="wait">
+              {isOpen("location") && (
+                <LocationPopover onSelectLocation={handleLocationSelect} />
+              )}
+            </AnimatePresence>
           </SearchTrigger>
 
           {/* Separator */}
@@ -170,9 +183,11 @@ export function SearchBar({
             value={filters.propertyType?.categoryName || ""}
             descriptionColor="black"
           >
-            {isOpen("category") && (
-              <CategoryPopover onSelectCategory={handleCategorySelect} />
-            )}
+            <AnimatePresence mode="wait">
+              {isOpen("category") && (
+                <CategoryPopover onSelectCategory={handleCategorySelect} />
+              )}
+            </AnimatePresence>
           </SearchTrigger>
 
           {/* Separator */}
@@ -189,17 +204,19 @@ export function SearchBar({
             descriptionColor="gray"
             paddingRight={isInSearchMode ? "pr-24" : "pr-16"}
           >
-            {isOpen("price") && (
-              <PricePopover
-                rentBuyMode={rentBuyMode}
-                onSelectPrice={handlePriceSelect}
-              />
-            )}
+            <AnimatePresence mode="wait">
+              {isOpen("price") && (
+                <PricePopover
+                  rentBuyMode={rentBuyMode}
+                  onSelectPrice={handlePriceSelect}
+                />
+              )}
+            </AnimatePresence>
           </SearchTrigger>
 
           {/* Search Button */}
           <SearchButton onClick={handleSearch} isSearchMode={isInSearchMode} />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

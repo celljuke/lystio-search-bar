@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, Check, CheckCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc/client";
 import { useSearchStore } from "../store";
 import type { LocationFilter } from "../types";
+import { motion, AnimatePresence } from "motion/react";
 
 interface LocationPopoverProps {
   onSelectLocation: (location: string) => void;
@@ -30,7 +31,10 @@ export function LocationPopover({
   onSelectLocation,
   className,
 }: LocationPopoverProps) {
-  const { updateFilter, closeDropdown } = useSearchStore();
+  const { updateFilter, closeDropdown, filters } = useSearchStore();
+
+  // Get currently selected location
+  const selectedLocationName = filters.location;
 
   // Fetch popular locations from API
   const { data: locations, isLoading } = trpc.location.getPopular.useQuery();
@@ -95,7 +99,14 @@ export function LocationPopover({
   // Only showing cities from the API
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{
+        duration: 0.2,
+        ease: [0.4, 0, 0.2, 1], // Custom easing for smooth feel
+      }}
       className={cn(
         "absolute top-full left-0 mt-2 w-[300px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] overflow-hidden",
         className
@@ -134,34 +145,82 @@ export function LocationPopover({
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
-                {cities.map((city) => (
-                  <button
-                    key={city.id}
-                    onClick={() => handleCityClick(city)}
-                    disabled={getBoundaryMutation.isPending}
-                    className="group flex flex-col items-start hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {/* City Image */}
-                    <div className="relative w-full aspect-square overflow-hidden rounded-xl mb-2">
-                      <Image
-                        src={city.image}
-                        alt={city.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                {cities.map((city, index) => {
+                  const isSelected = selectedLocationName === city.name;
+                  return (
+                    <motion.button
+                      key={city.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: index * 0.05,
+                        duration: 0.3,
+                        ease: [0.4, 0, 0.2, 1],
+                      }}
+                      onClick={() => handleCityClick(city)}
+                      disabled={getBoundaryMutation.isPending}
+                      className={cn(
+                        "group flex flex-col items-start transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-md",
+                        isSelected
+                          ? "ring-1 ring-[#A540F3] p-0.5"
+                          : "hover:opacity-80"
+                      )}
+                    >
+                      {/* City Image */}
+                      <div
+                        className={cn(
+                          "relative w-full aspect-square overflow-hidden mb-2 rounded-md"
+                        )}
+                      >
+                        <Image
+                          src={city.image}
+                          alt={city.name}
+                          fill
+                          className="object-cover"
+                        />
 
-                    {/* City Info */}
-                    <div className="text-left w-full">
-                      <h5 className="text-sm font-semibold text-gray-900">
-                        {city.name}
-                      </h5>
-                      <p className="text-xs text-gray-500">
-                        {city.districts} Districts
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                        {/* Checkmark for selected city */}
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg border-1 border-white"
+                          >
+                            <Check className="w-3 h-3 text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* City Info */}
+                      <div
+                        className={cn(
+                          "text-left w-full",
+                          isSelected && "px-2 pb-2"
+                        )}
+                      >
+                        <h5
+                          className={cn(
+                            "text-sm font-semibold",
+                            isSelected ? "text-[#A540F3]" : "text-gray-900"
+                          )}
+                        >
+                          {city.name}
+                        </h5>
+                        <p
+                          className={cn(
+                            "text-xs",
+                            isSelected ? "text-[#A540F3]" : "text-gray-500"
+                          )}
+                        >
+                          {city.districts === 0
+                            ? "All Districts"
+                            : `${city.districts} Districts`}
+                        </p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -179,6 +238,6 @@ export function LocationPopover({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

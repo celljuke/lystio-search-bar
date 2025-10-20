@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useCategory } from "../hooks/use-category";
 import { PropertyTypeFilter } from "../types";
+import { motion } from "motion/react";
 
 interface CategoryPopoverProps {
   onSelectCategory: (
@@ -25,7 +26,16 @@ export function CategoryPopover({ onSelectCategory }: CategoryPopoverProps) {
   } = useCategory(onSelectCategory);
 
   return (
-    <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] overflow-hidden flex">
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{
+        duration: 0.2,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] overflow-hidden flex"
+    >
       {/* Left Panel - Categories */}
       <div className="w-64 border-r border-gray-200">
         <div className="p-3">
@@ -137,6 +147,6 @@ export function CategoryPopover({ onSelectCategory }: CategoryPopoverProps) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

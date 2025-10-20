@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePrice } from "../hooks/use-price";
 import { PriceRangeFilter } from "../types";
+import { motion } from "motion/react";
 
 interface PricePopoverProps {
   rentBuyMode: "rent" | "buy" | "ai";
@@ -33,7 +34,16 @@ export function PricePopover({
   const maxCount = Math.max(...histogramData.map((b) => b.count), 1);
 
   return (
-    <div className="absolute top-full left-0 mt-2 w-[400px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] p-6">
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{
+        duration: 0.2,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      className="absolute top-full left-0 mt-2 w-[400px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] p-6"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -118,6 +128,6 @@ export function PricePopover({
           Apply Price Range
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
