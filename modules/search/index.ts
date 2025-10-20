@@ -5,6 +5,7 @@ export { PropertyCard } from "./components/property-card";
 export { PropertyList } from "./components/property-list";
 export { MobileSearchModal } from "./components/mobile-search-modal";
 export { MobileActionButtons } from "./components/mobile-action-buttons";
+export { AiPromptDialog } from "./components/ai-prompt-dialog";
 
 // Hooks
 export { useSearch } from "./hooks/use-search";
@@ -13,6 +14,7 @@ export { useRentBuyMode } from "./hooks/use-rent-buy-mode";
 export { useLocationSelect } from "./hooks/use-location-select";
 export { useHistogram } from "./hooks/use-histogram";
 export { useVerifiedCount } from "./hooks/use-verified-count";
+export { useAiSearch } from "./hooks/use-ai-search";
 
 // Types
 export type { SearchFilters, SearchState, SearchBarProps } from "./types";

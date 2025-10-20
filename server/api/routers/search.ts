@@ -3,6 +3,7 @@ import { searchService } from "@/server/services/search";
 import {
   searchInputSchema,
   searchFilterSchema,
+  aiSearchRequestSchema,
 } from "@/server/services/search/schema";
 
 export const searchRouter = router({
@@ -16,9 +17,13 @@ export const searchRouter = router({
       return await searchService.getHistogram(input);
     }),
 
-  count: publicProcedure
-    .input(searchFilterSchema)
-    .query(async ({ input }) => {
-      return await searchService.getCount(input);
+  count: publicProcedure.input(searchFilterSchema).query(async ({ input }) => {
+    return await searchService.getCount(input);
+  }),
+
+  aiSearch: publicProcedure
+    .input(aiSearchRequestSchema)
+    .mutation(async ({ input }) => {
+      return await searchService.searchWithAi(input);
     }),
 });

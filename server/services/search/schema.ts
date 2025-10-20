@@ -3,13 +3,15 @@ import { z } from "zod";
 // Lystio API Filter schema - matching the API structure
 export const lystioApiFilterSchema = z.object({
   ids: z.array(z.number()).optional(),
-  size: z.tuple([z.number(), z.number()]).optional(),
-  rent: z.tuple([z.number(), z.number()]).optional(),
+  size: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
+  rent: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
   rentScope: z.enum(["rent", "buy"]).optional(),
-  rentUtilities: z.tuple([z.number(), z.number()]).optional(),
-  rooms: z.tuple([z.number(), z.number()]).optional(),
-  roomsBed: z.tuple([z.number(), z.number()]).optional(),
-  roomsBath: z.tuple([z.number(), z.number()]).optional(),
+  rentUtilities: z
+    .tuple([z.number().nullable(), z.number().nullable()])
+    .optional(),
+  rooms: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
+  roomsBed: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
+  roomsBath: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
   type: z.array(z.number()).optional(),
   subType: z.array(z.number()).optional(),
   condition: z.array(z.number()).optional(),
@@ -43,8 +45,8 @@ export const lystioApiFilterSchema = z.object({
   searchAgentId: z.number().optional(),
   withLeads: z.boolean().optional(),
   listingDuration: z.number().optional(),
-  parking: z.tuple([z.number(), z.number()]).optional(),
-  cellar: z.tuple([z.number(), z.number()]).optional(),
+  parking: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
+  cellar: z.tuple([z.number().nullable(), z.number().nullable()]).optional(),
   style: z.enum(["old", "new"]).optional(),
   showPriceOnRequest: z.boolean().optional(),
 });
@@ -155,6 +157,14 @@ export const countResponseSchema = z.object({
   count: z.number(), // Total count of properties matching the filter
 });
 
+// AI search request schema
+export const aiSearchRequestSchema = z.object({
+  prompt: z.string(), // Natural language search query
+});
+
+// AI search response schema - returns filter object
+export const aiSearchResponseSchema = lystioApiFilterSchema;
+
 // Export types
 export type LystioApiFilter = z.infer<typeof lystioApiFilterSchema>;
 export type LystioApiSort = z.infer<typeof lystioApiSortSchema>;
@@ -166,3 +176,5 @@ export type SearchSort = z.infer<typeof sortSchema>;
 export type SearchInput = z.infer<typeof searchInputSchema>;
 export type HistogramResponse = z.infer<typeof histogramResponseSchema>;
 export type CountResponse = z.infer<typeof countResponseSchema>;
+export type AiSearchRequest = z.infer<typeof aiSearchRequestSchema>;
+export type AiSearchResponse = z.infer<typeof aiSearchResponseSchema>;

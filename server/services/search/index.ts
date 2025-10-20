@@ -9,8 +9,15 @@ import type {
   SearchPaging,
   HistogramResponse,
   CountResponse,
+  AiSearchRequest,
+  AiSearchResponse,
 } from "./schema";
-import { histogramResponseSchema, countResponseSchema } from "./schema";
+import {
+  histogramResponseSchema,
+  countResponseSchema,
+  aiSearchRequestSchema,
+  aiSearchResponseSchema,
+} from "./schema";
 
 /**
  * Response structure from Lystio API
@@ -292,6 +299,45 @@ export class SearchService {
       console.error("Error fetching count:", error);
       throw new Error(
         `Failed to fetch count: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  /**
+   * AI-powered search
+   * Converts natural language prompt to search filters
+   */
+  async searchWithAi(request: AiSearchRequest): Promise<AiSearchResponse> {
+    try {
+      // Validate input
+      const validatedRequest = aiSearchRequestSchema.parse(request);
+
+      const response = await fetch(`${this.apiUrl}/tenement/search/ai`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(validatedRequest),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Lystio AI search error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate response with Zod
+      const validatedData = aiSearchResponseSchema.parse(data);
+
+      return validatedData;
+    } catch (error) {
+      console.error("Error in AI search:", error);
+      throw new Error(
+        `Failed to perform AI search: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );

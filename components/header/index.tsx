@@ -2,6 +2,8 @@
 
 import { MobileSearchModal, useRentBuyMode } from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
+import { useAiSearch } from "@/modules/search/hooks/use-ai-search";
+import { AiPromptDialog } from "@/modules/search/components/ai-prompt-dialog";
 import { cn } from "@/lib/utils";
 import { HeaderActions } from "./header-actions";
 import { HeaderLogo } from "./header-logo";
@@ -10,13 +12,22 @@ import { DesktopSearchArea } from "./desktop-search-area";
 
 export function Header() {
   const { mode: rentBuyMode, setMode: setRentBuyMode } = useRentBuyMode();
+  const {
+    isDialogOpen,
+    openDialog,
+    closeDialog,
+    handleAiSearch,
+    isLoading: isAiSearchLoading,
+  } = useAiSearch();
 
   // Map "ai" mode to "rent" for now (since API doesn't support AI mode yet)
   const rentBuyValue = rentBuyMode as "rent" | "buy" | "ai";
 
   const handleRentBuyChange = (value: "rent" | "buy" | "ai") => {
-    // Only set mode if it's "rent" or "buy" (ignore "ai" for now)
-    if (value === "rent" || value === "buy") {
+    if (value === "ai") {
+      // Open AI dialog
+      openDialog();
+    } else if (value === "rent" || value === "buy") {
       setRentBuyMode(value);
     }
   };
@@ -98,6 +109,14 @@ export function Header() {
           </div>
         </div>
       </nav>
+
+      {/* AI Prompt Dialog */}
+      <AiPromptDialog
+        isOpen={isDialogOpen}
+        onClose={closeDialog}
+        onSubmit={handleAiSearch}
+        isLoading={isAiSearchLoading}
+      />
     </>
   );
 }
