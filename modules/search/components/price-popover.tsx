@@ -29,6 +29,9 @@ export function PricePopover({
     return price >= priceRange[0] && price <= priceRange[1];
   };
 
+  // Calculate max count for histogram normalization
+  const maxCount = Math.max(...histogramData.map((b) => b.count), 1);
+
   return (
     <div className="absolute top-full left-0 mt-2 w-[400px] bg-white border border-gray-200 rounded-2xl shadow-xl z-[100] p-6">
       <div className="space-y-6">
@@ -70,7 +73,7 @@ export function PricePopover({
           <div className="absolute inset-0 flex items-end justify-between gap-0.5">
             {histogramData.map((bar, index) => {
               const isInRange = isBarInRange(bar.price);
-              const heightPercentage = (bar.count / 100) * 100;
+              const heightPercentage = (bar.count / maxCount) * 100;
 
               return (
                 <div
@@ -81,7 +84,7 @@ export function PricePopover({
                   )}
                   style={{
                     height: `${heightPercentage}%`,
-                    minHeight: "4px",
+                    minHeight: bar.count > 0 ? "4px" : "0px",
                   }}
                 />
               );

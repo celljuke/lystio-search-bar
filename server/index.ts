@@ -43,6 +43,8 @@ export {
   lystioApiFilterSchema,
   lystioApiSortSchema,
   lystioApiPagingSchema,
+  histogramResponseSchema,
+  type HistogramResponse,
 } from "./services/search/schema";
 
 export {

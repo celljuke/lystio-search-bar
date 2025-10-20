@@ -144,6 +144,12 @@ export const searchInputSchema = z.object({
   paging: pagingSchema,
 });
 
+// Histogram response schema
+export const histogramResponseSchema = z.object({
+  range: z.tuple([z.number(), z.number()]), // [min, max]
+  histogram: z.array(z.number()), // Array of counts for each bin
+});
+
 // Export types
 export type LystioApiFilter = z.infer<typeof lystioApiFilterSchema>;
 export type LystioApiSort = z.infer<typeof lystioApiSortSchema>;
@@ -153,3 +159,4 @@ export type SearchFilter = z.infer<typeof searchFilterSchema>;
 export type SearchPaging = z.infer<typeof pagingSchema>;
 export type SearchSort = z.infer<typeof sortSchema>;
 export type SearchInput = z.infer<typeof searchInputSchema>;
+export type HistogramResponse = z.infer<typeof histogramResponseSchema>;

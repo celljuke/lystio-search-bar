@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { SearchFilters } from "./types";
+import type { HistogramResponse } from "@/server";
 
 type PopoverId = "location" | "category" | "price";
 type ViewMode = "list" | "map";
@@ -8,6 +9,12 @@ interface SearchState {
   filters: SearchFilters;
   isSearching: boolean;
   results: any[];
+
+  // Histogram state
+  histogram: HistogramResponse | null;
+  isHistogramLoading: boolean;
+  setHistogram: (histogram: HistogramResponse | null) => void;
+  setHistogramLoading: (isLoading: boolean) => void;
 
   setFilters: (filters: SearchFilters) => void;
   updateFilter: (key: keyof SearchFilters, value: any) => void;
@@ -48,6 +55,12 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
   isSearching: false,
   results: [],
+
+  // Histogram state
+  histogram: null,
+  isHistogramLoading: false,
+  setHistogram: (histogram) => set({ histogram }),
+  setHistogramLoading: (isHistogramLoading) => set({ isHistogramLoading }),
 
   setFilters: (filters) => set({ filters }),
 

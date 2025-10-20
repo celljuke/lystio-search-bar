@@ -7,7 +7,9 @@ import type {
   LystioApiFilter,
   LystioApiSort,
   SearchPaging,
+  HistogramResponse,
 } from "./schema";
+import { histogramResponseSchema } from "./schema";
 
 /**
  * Response structure from Lystio API
@@ -206,6 +208,53 @@ export class SearchService {
       sort: apiSort,
       paging: apiPaging,
     };
+  }
+
+  /**
+   * Get price histogram based on current filters
+   * This excludes the price filter itself to show the full distribution
+   */
+  async getHistogram(filter: SearchFilter): Promise<HistogramResponse> {
+    // Build API request but we only need the filter part
+    const apiRequest = this.buildLystioApiRequest(filter, undefined, {
+      page: 1,
+      pageSize: 1,
+    });
+
+    // Remove rent range from filter for histogram
+    const apiFilter = { ...apiRequest.filter };
+    delete apiFilter.rent;
+
+    try {
+      // Call the Lystio API histogram endpoint
+      const response = await fetch(`${this.apiUrl}/tenement/search/histogram`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiFilter),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Lystio API histogram error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate response with Zod
+      const validatedData = histogramResponseSchema.parse(data);
+
+      return validatedData;
+    } catch (error) {
+      console.error("Error fetching histogram:", error);
+      throw new Error(
+        `Failed to fetch histogram: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
   }
 }
 

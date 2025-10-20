@@ -8,15 +8,22 @@ interface UsePriceProps {
 }
 
 export function usePrice({ rentBuyMode, onSelectPrice }: UsePriceProps) {
-  const { filters } = useSearchStore();
+  const { filters, histogram: histogramResponse } = useSearchStore();
 
-  // Price bounds based on rent/buy mode
+  // Price bounds based on histogram data or defaults
   const priceBounds = useMemo(() => {
+    if (histogramResponse?.range) {
+      const [min, max] = histogramResponse.range;
+      const step = rentBuyMode === "buy" ? 10000 : 100;
+      return { min, max, step };
+    }
+
+    // Fallback defaults if histogram not loaded
     if (rentBuyMode === "rent" || rentBuyMode === "ai") {
       return { min: 400, max: 20000, step: 100 };
     }
     return { min: 10000, max: 2000000, step: 10000 };
-  }, [rentBuyMode]);
+  }, [rentBuyMode, histogramResponse]);
 
   // Initialize with current filter value or default to full range
   const [priceRange, setPriceRange] = useState<[number, number]>(() => {
@@ -35,8 +42,19 @@ export function usePrice({ rentBuyMode, onSelectPrice }: UsePriceProps) {
     }
   }, [filters.priceRange, priceBounds.min, priceBounds.max]);
 
-  // Generate histogram data (mock data for now)
+  // Generate histogram data from API response
   const histogramData = useMemo(() => {
+    if (histogramResponse?.histogram) {
+      const buckets = histogramResponse.histogram.length;
+      const bucketSize = (priceBounds.max - priceBounds.min) / buckets;
+
+      return histogramResponse.histogram.map((count, i) => ({
+        price: priceBounds.min + i * bucketSize,
+        count,
+      }));
+    }
+
+    // Fallback: Generate mock data if API response not available
     const buckets = 20;
     const bucketSize = (priceBounds.max - priceBounds.min) / buckets;
     return Array.from({ length: buckets }, (_, i) => {
@@ -49,7 +67,7 @@ export function usePrice({ rentBuyMode, onSelectPrice }: UsePriceProps) {
         count: Math.round(height * 100),
       };
     });
-  }, [priceBounds]);
+  }, [priceBounds, histogramResponse]);
 
   const handlePriceChange = (value: number[]) => {
     setPriceRange([value[0], value[1]]);

@@ -11,6 +11,7 @@ export { useSearch } from "./hooks/use-search";
 export { usePropertySearch } from "./hooks/use-property-search";
 export { useRentBuyMode } from "./hooks/use-rent-buy-mode";
 export { useLocationSelect } from "./hooks/use-location-select";
+export { useHistogram } from "./hooks/use-histogram";
 
 // Types
 export type { SearchFilters, SearchState, SearchBarProps } from "./types";

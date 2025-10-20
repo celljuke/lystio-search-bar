@@ -2,11 +2,18 @@
 
 import { Map } from "@/components/map";
 import { config } from "@/lib/config";
-import { PropertyList, MobileActionButtons } from "@/modules/search";
+import {
+  PropertyList,
+  MobileActionButtons,
+  useHistogram,
+} from "@/modules/search";
 import { useSearchStore } from "@/modules/search/store";
 
 export default function Home() {
   const { viewMode } = useSearchStore();
+
+  // Fetch histogram data on filter changes
+  useHistogram();
 
   return (
     <>
